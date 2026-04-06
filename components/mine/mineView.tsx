@@ -1,0 +1,100 @@
+import { useNavigation } from "@react-navigation/native";
+import { View } from "react-native";
+import { Pressable } from "react-native-gesture-handler";
+import { useStore } from "zustand";
+import { Avatar } from "@/components/avatar";
+import { Attendance } from "@/components/mine/attendance";
+import { Notification } from "@/components/mine/notification";
+import { Rank } from "@/components/mine/rank";
+import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
+import { Text } from "@/components/ui/text";
+import { useUserSuspenseQuery } from "@/hooks/services/useUserQuery";
+import { config } from "@/lib/config";
+import { ScreenName } from "@/stack/screenName";
+import { userStore } from "@/store/userStore";
+
+export const MineView = ({ uid }: { uid: number }) => {
+	const { data } = useUserSuspenseQuery(uid);
+	const navigation = useNavigation();
+	const userId = useStore(userStore, (s) => s.id);
+
+	const goWebview = (hash: string) => {
+		const url = new URL(`space/${userId}`, config.siteUrl);
+		url.hash = hash;
+
+		navigation.navigate(ScreenName.WebView, {
+			uri: url.toString(),
+		});
+	};
+
+	return (
+		<>
+			<View className="items-center gap-4">
+				<Avatar size={128} uid={data.uid} />
+				<View className="gap-1 items-center">
+					<Text className="text-2xl">{data.name}</Text>
+					<View className="flex-row items-center">
+						<View className="flex-1 flex-row gap-1.5 items-center justify-end">
+							<MaterialDesignIcons name="food-drumstick" size={14} />
+							<Text>{data.coinCount}</Text>
+						</View>
+						<MaterialDesignIcons name="circle-small" size={24} />
+						<View className="flex-1">
+							<Text>{`Lv.${data.rank}`}</Text>
+						</View>
+					</View>
+				</View>
+				<View className="flex-row">
+					{[
+						{
+							key: "postCount",
+							label: "主题帖数",
+							value: data.postCount,
+							onPress: () => {
+								goWebview("#/discussions");
+							},
+						},
+						{
+							key: "commentCount",
+							label: "评论数目",
+							value: data.commentCount,
+							onPress: () => {
+								goWebview("#/comments");
+							},
+						},
+						{
+							key: "favoriteCount",
+							label: "收藏项数",
+							value: data.favoriteCount,
+							onPress: () => {
+								goWebview("#/collections");
+							},
+						},
+					].map((x, idx, arr) => {
+						return (
+							<View key={x.key} className="flex-1">
+								<Pressable onPress={x.onPress}>
+									<View
+										className={`items-center gap-1 ${idx === arr.length - 1 ? "" : "border-r border-border"}`}
+									>
+										<Text className="text-sm">{x.value || "-"}</Text>
+										<Text className="text-sm text-muted-foreground">
+											{x.label}
+										</Text>
+									</View>
+								</Pressable>
+							</View>
+						);
+					})}
+				</View>
+			</View>
+			<View className="mt-4 mx-4 gap-2">
+				<Rank user={data} />
+				<View className="flex-row gap-2">
+					<Attendance />
+					<Notification />
+				</View>
+			</View>
+		</>
+	);
+};

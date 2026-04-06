@@ -1,0 +1,14 @@
+export const ScreenName = {
+	Singin: "Singin",
+	Tabs: "Tabs",
+	Home: "TabsHome",
+	Mine: "TabsMine",
+	Categories: "TabsCategories",
+	Settings: "Settings",
+	Post: "Post",
+	Posts: "Posts",
+	WebView: "WebView",
+	Signin: "Signin",
+	Authenticate: "Authenticate",
+	Search: "Search",
+} as const;

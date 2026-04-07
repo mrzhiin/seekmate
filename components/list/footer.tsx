@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-screens/experimental";
 import { Spinner } from "../spinner";
@@ -12,6 +13,7 @@ export const ListFooter = ({
 	hasNextPage: boolean;
 	isFetching: boolean;
 }) => {
+	const { t } = useTranslation();
 	if (isFetchingNextPage) {
 		return (
 			<SafeAreaView edges={{ bottom: true }}>
@@ -25,7 +27,7 @@ export const ListFooter = ({
 			<SafeAreaView edges={{ bottom: true }}>
 				<View className="py-3 items-center justify-center">
 					<Text className="text-muted-foreground font-normal">
-						上拉加载更多
+						{t("list.footer.loadingMore")}
 					</Text>
 				</View>
 			</SafeAreaView>
@@ -34,7 +36,9 @@ export const ListFooter = ({
 		return (
 			<SafeAreaView edges={{ bottom: true }}>
 				<View className="py-3 items-center justify-center">
-					<Text className="text-muted-foreground font-normal">已全部加载</Text>
+					<Text className="text-muted-foreground font-normal">
+						{t("list.footer.allLoaded")}
+					</Text>
 				</View>
 			</SafeAreaView>
 		);

@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { produce } from "immer";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import * as v from "valibot";
 import { Text } from "@/components/ui/text";
@@ -26,6 +27,7 @@ export const Original = ({
 	postId: number;
 	data: PostPageData;
 }) => {
+	const { t } = useTranslation();
 	const postOriginalQueryKey = usePostOriginalQueryKey({
 		postId,
 	});
@@ -51,7 +53,9 @@ export const Original = ({
 				<View className="flex-1 items-center flex-row gap-x-2 gap-y-1 flex-wrap">
 					<Text className="text-base"> {data.author.name}</Text>
 					<View className="rounded-2xl px-2 py-1 bg-primary justify-center items-center">
-						<Text className="text-xs text-primary-foreground">楼主</Text>
+						<Text className="text-xs text-primary-foreground">
+							{t("post.original.poster")}
+						</Text>
 					</View>
 				</View>
 			</View>

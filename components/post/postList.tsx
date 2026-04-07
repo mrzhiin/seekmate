@@ -21,6 +21,19 @@ import { MaterialDesignIcons } from "../ui/materialDesignIcons";
 
 dayjs.extend(relativeTime);
 
+type PostListQuery = Pick<
+	ReturnType<typeof useInfinitePostsQuery>,
+	| "data"
+	| "fetchNextPage"
+	| "hasNextPage"
+	| "isFetchingNextPage"
+	| "refetch"
+	| "isLoading"
+	| "isLoadingError"
+> & {
+	queryKey: readonly unknown[];
+};
+
 const PostItem = observer(
 	({
 		item$,
@@ -163,11 +176,7 @@ export const PostList = ({
 	return <PostListView query={query} />;
 };
 
-export const PostListView = ({
-	query,
-}: {
-	query: ReturnType<typeof useInfinitePostsQuery>;
-}) => {
+export const PostListView = ({ query }: { query: PostListQuery }) => {
 	const postsById$ = useObservable<Record<number, Post>>({});
 	const navigation = useNavigation();
 	const queryClient = useQueryClient();

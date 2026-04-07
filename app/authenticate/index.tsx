@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import WebView, {
 	type WebViewMessageEvent,
@@ -60,14 +61,15 @@ const Screen = () => {
 	const navigation = useNavigation<NativeStackNavigationProp<ScreenParams>>();
 	const webViewRef = useRef<WebView>(null);
 	const update = useStore(userStore, (s) => s.update);
+	const { t } = useTranslation();
 
 	const prevUrlPathnameRef = useRef<string>(null);
 
 	useEffect(() => {
 		navigation.setOptions({
-			title: "登录",
+			title: t("auth.title"),
 		});
-	}, [navigation]);
+	}, [navigation, t]);
 
 	const handleNavigationStateChange = useCallback(
 		(navState: WebViewNavigation) => {

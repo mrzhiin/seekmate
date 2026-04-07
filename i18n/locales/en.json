@@ -1,0 +1,118 @@
+{
+	"common": {
+		"appName": "SeekMate",
+		"confirm": "Confirm",
+		"cancel": "Cancel",
+		"retry": "Retry"
+	},
+	"auth": {
+		"title": "Log in",
+		"signInPrompt": {
+			"welcome": "Welcome",
+			"description": "Let's get started",
+			"signIn": "Log in",
+			"register": "Register"
+		}
+	},
+	"tabs": {
+		"home": {
+			"tab": "Home",
+			"newPosts": "New posts",
+			"newReplies": "New replies"
+		},
+		"categories": {
+			"title": "Categories",
+			"tab": "Categories"
+		},
+		"mine": {
+			"title": "Hello!",
+			"tab": "Mine"
+		}
+	},
+	"search": {
+		"placeholder": "Search"
+	},
+	"settings": {
+		"title": "Settings",
+		"about": "About",
+		"version": "Version",
+		"github": "GitHub",
+		"githubSubtitle": "Thanks for your feedback",
+		"siteSubtitle": "A place for people who love web development, hosting, VPS / servers and other geeky things",
+		"user": {
+			"logout": "Log out",
+			"logoutDescription": "Log out of the current account",
+			"signIn": "Sign in",
+			"signInDescription": "Let's get started",
+			"confirmLogout": "Confirm logout?"
+		},
+		"autoCheckIn": {
+			"label": "Auto check-in",
+			"description": "Try to check in on launch"
+		},
+		"checkIn": {
+			"label": "Check-in method",
+			"fixed": "Fixed",
+			"random": "Random"
+		},
+		"locale": "Language",
+		"clearImageCache": {
+			"label": "Clear image cache",
+			"description": "Remove cached image assets to free up space",
+			"title": "Clear image cache",
+			"message": "Clear cached images on this device?",
+			"success": "Image cache cleared",
+			"partial": "Some image cache could not be cleared",
+			"failed": "Failed to clear image cache"
+		}
+	},
+	"post": {
+		"original": {
+			"poster": "Original poster"
+		},
+		"inputBar": {
+			"placeholder": "Be kind, no personal attacks",
+			"timeout": "Comment reply timed out",
+			"success": "Comment replied successfully!",
+			"failed": "Comment reply failed"
+		},
+		"menu": {
+			"openInBrowser": "Open in browser"
+		}
+	},
+	"mine": {
+		"rank": {
+			"currentLevel": "Current level Lv.{{level}}",
+			"nextLevelDistance": "Distance to next level"
+		},
+		"profile": {
+			"postCount": "Posts",
+			"commentCount": "Comments",
+			"favoriteCount": "Favorites",
+			"level": "Lv.{{level}}"
+		},
+		"notification": {
+			"unreadCount": "Unread"
+		},
+		"attendance": {
+			"success": "Checked in successfully",
+			"failed": "Check-in failed!",
+			"error": "Check-in error!",
+			"signedIn": "Checked in +{{coins}}",
+			"signingIn": "Checking in",
+			"loading": "Loading",
+			"notSignedIn": "Not checked in"
+		}
+	},
+	"errorFallback": {
+		"title": "Error",
+		"message": "Oops! Something went wrong",
+		"retry": "Retry"
+	},
+	"list": {
+		"footer": {
+			"loadingMore": "Pull up to load more",
+			"allLoaded": "All loaded"
+		}
+	}
+}

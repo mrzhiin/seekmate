@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import type { useUserSuspenseQuery } from "@/hooks/services/useUserQuery";
@@ -9,6 +10,7 @@ export const Rank = ({
 }: {
 	user: ReturnType<typeof useUserSuspenseQuery>["data"];
 }) => {
+	const { t } = useTranslation();
 	const data = user;
 	const [next, progress] = useMemo(() => {
 		if (data) {
@@ -37,7 +39,7 @@ export const Rank = ({
 		<View className="bg-muted p-4 items-center rounded-xl flex-row gap-4">
 			<MaterialDesignIcons name="trophy" size={32} color={"#FF9800"} />
 			<View className="flex-1 gap-1">
-				<Text>{`当前等级 Lv.${data.rank}`}</Text>
+				<Text>{t("mine.rank.currentLevel", { level: data.rank })}</Text>
 				<View
 					style={{
 						height: 8,
@@ -54,7 +56,7 @@ export const Rank = ({
 					/>
 				</View>
 				<View className="flex-row justify-between items-center">
-					<Text className="text-xs">距离下一等级</Text>
+					<Text className="text-xs">{t("mine.rank.nextLevelDistance")}</Text>
 					<View className="flex-row items-center">
 						<Text className="text-xs">{data.coinCount}</Text>
 						<MaterialDesignIcons name="slash-forward" size={12} />

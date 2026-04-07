@@ -1,10 +1,12 @@
 import { Image } from "expo-image";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, ToastAndroid } from "react-native";
 import { Item } from "./Item";
 
 export const ClearImageCache = () => {
 	const [isClearing, setIsClearing] = useState(false);
+	const { t } = useTranslation();
 
 	const clearImageCache = async () => {
 		if (isClearing) {
@@ -25,13 +27,22 @@ export const ClearImageCache = () => {
 				diskResult.status === "fulfilled" && diskResult.value;
 
 			if (isMemoryCacheCleared && isDiskCacheCleared) {
-				ToastAndroid.show("图片缓存已清理", ToastAndroid.SHORT);
+				ToastAndroid.show(
+					t("settings.clearImageCache.success"),
+					ToastAndroid.SHORT,
+				);
 				return;
 			} else {
-				ToastAndroid.show("部分图片缓存未能清理", ToastAndroid.SHORT);
+				ToastAndroid.show(
+					t("settings.clearImageCache.partial"),
+					ToastAndroid.SHORT,
+				);
 			}
 		} catch {
-			ToastAndroid.show("图片缓存清理失败", ToastAndroid.SHORT);
+			ToastAndroid.show(
+				t("settings.clearImageCache.failed"),
+				ToastAndroid.SHORT,
+			);
 		} finally {
 			setIsClearing(false);
 		}
@@ -42,23 +53,27 @@ export const ClearImageCache = () => {
 			return;
 		}
 
-		Alert.alert("清理图片缓存", "确认清理当前设备上的图片缓存吗？", [
-			{
-				text: "取消",
-				style: "cancel",
-			},
-			{
-				text: "确认",
-				style: "destructive",
-				onPress: clearImageCache,
-			},
-		]);
+		Alert.alert(
+			t("settings.clearImageCache.title"),
+			t("settings.clearImageCache.message"),
+			[
+				{
+					text: t("common.cancel"),
+					style: "cancel",
+				},
+				{
+					text: t("common.confirm"),
+					style: "destructive",
+					onPress: clearImageCache,
+				},
+			],
+		);
 	};
 
 	return (
 		<Item
-			label="清理图片缓存"
-			subLabel="删除已缓存图片资源，释放空间"
+			label={t("settings.clearImageCache.label")}
+			subLabel={t("settings.clearImageCache.description")}
 			onPress={handlePressClearImageCache}
 		/>
 	);

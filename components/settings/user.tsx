@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { useStore } from "zustand";
 import { ScreenName } from "@/stack/screenName";
@@ -9,21 +10,22 @@ import { Item } from "./Item";
 export const User = () => {
 	const userId = useStore(userStore, (s) => s.id);
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 
 	if (userId) {
 		return (
 			<Item
-				label="登出"
-				subLabel="退出当前账户"
+				label={t("settings.user.logout")}
+				subLabel={t("settings.user.logoutDescription")}
 				right={<Avatar uid={userId} size={48} />}
 				onPress={() => {
-					Alert.alert("确认退出?", "", [
+					Alert.alert(t("settings.user.confirmLogout"), "", [
 						{
-							text: "取消",
+							text: t("common.cancel"),
 							style: "cancel",
 						},
 						{
-							text: "确认",
+							text: t("common.confirm"),
 							style: "destructive",
 							onPress: () => {
 								userStore.getState().reset();
@@ -37,8 +39,8 @@ export const User = () => {
 
 	return (
 		<Item
-			label="登入"
-			subLabel="Lets get started"
+			label={t("settings.user.signIn")}
+			subLabel={t("settings.user.signInDescription")}
 			onPress={() => {
 				navigation.navigate(ScreenName.Authenticate);
 			}}

@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { useNotificationQuery } from "@/hooks/services/useNotificationQuery";
@@ -9,6 +10,7 @@ import { Pressable } from "../pressable";
 export const Notification = () => {
 	const navigation = useNavigation();
 	const { data } = useNotificationQuery();
+	const { t } = useTranslation();
 
 	return (
 		<Pressable
@@ -23,7 +25,7 @@ export const Notification = () => {
 				<View className="grow items-center justify-center">
 					<Text className="text-xl">{data?.unreadCount ?? "-"}</Text>
 				</View>
-				<Text className="text-base">未读数</Text>
+				<Text className="text-base">{t("mine.notification.unreadCount")}</Text>
 			</View>
 		</Pressable>
 	);

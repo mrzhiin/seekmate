@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ToastAndroid, View } from "react-native";
 import WebView, { type WebViewMessageEvent } from "react-native-webview";
 import { Text } from "@/components/ui/text";
@@ -17,6 +18,7 @@ export const Attendance = () => {
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isWebview, setIsWebview] = useState(false);
+	const { t } = useTranslation();
 	const { data, refetch, isLoading, isFetching } = useAttendanceQuery();
 	const signedInData = data ?? null;
 	const hasSignedIn = signedInData !== null;
@@ -30,12 +32,12 @@ export const Attendance = () => {
 
 			if (message.success) {
 				await refetch();
-				ToastAndroid.show("签到成功", ToastAndroid.SHORT);
+				ToastAndroid.show(t("mine.attendance.success"), ToastAndroid.SHORT);
 			} else {
-				ToastAndroid.show("签到失败！", ToastAndroid.SHORT);
+				ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);
 			}
 		} catch (_) {
-			ToastAndroid.show("签到出错！", ToastAndroid.SHORT);
+			ToastAndroid.show(t("mine.attendance.error"), ToastAndroid.SHORT);
 		} finally {
 			setIsSubmitting(false);
 			setIsWebview(false);
@@ -90,7 +92,9 @@ export const Attendance = () => {
 								className="text-green-500"
 							/>
 						</View>
-						<Text className="text-base">{`已签到 +${signedInData.coins}`}</Text>
+						<Text className="text-base">
+							{t("mine.attendance.signedIn", { coins: signedInData.coins })}
+						</Text>
 					</>
 				) : isSubmitting ? (
 					<>
@@ -106,7 +110,7 @@ export const Attendance = () => {
 								className="text-secondary-foreground"
 							/>
 						</View>
-						<Text className="text-base">签到中</Text>
+						<Text className="text-base">{t("mine.attendance.signingIn")}</Text>
 					</>
 				) : isInitialLoading ? (
 					<>
@@ -122,7 +126,7 @@ export const Attendance = () => {
 								className="text-secondary-foreground"
 							/>
 						</View>
-						<Text className="text-base">加载中</Text>
+						<Text className="text-base">{t("mine.attendance.loading")}</Text>
 					</>
 				) : (
 					<>
@@ -138,7 +142,9 @@ export const Attendance = () => {
 								className="text-secondary-foreground"
 							/>
 						</View>
-						<Text className="text-base">未签到</Text>
+						<Text className="text-base">
+							{t("mine.attendance.notSignedIn")}
+						</Text>
 					</>
 				)}
 			</View>

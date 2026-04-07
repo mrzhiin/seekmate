@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Pressable } from "react-native-gesture-handler";
 import { useStore } from "zustand";
@@ -16,6 +17,7 @@ import { userStore } from "@/store/userStore";
 export const MineView = ({ uid }: { uid: number }) => {
 	const { data } = useUserSuspenseQuery(uid);
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 	const userId = useStore(userStore, (s) => s.id);
 
 	const goWebview = (hash: string) => {
@@ -40,7 +42,7 @@ export const MineView = ({ uid }: { uid: number }) => {
 						</View>
 						<MaterialDesignIcons name="circle-small" size={24} />
 						<View className="flex-1">
-							<Text>{`Lv.${data.rank}`}</Text>
+							<Text>{t("mine.profile.level", { level: data.rank })}</Text>
 						</View>
 					</View>
 				</View>
@@ -48,7 +50,7 @@ export const MineView = ({ uid }: { uid: number }) => {
 					{[
 						{
 							key: "postCount",
-							label: "主题帖数",
+							label: t("mine.profile.postCount"),
 							value: data.postCount,
 							onPress: () => {
 								goWebview("#/discussions");
@@ -56,7 +58,7 @@ export const MineView = ({ uid }: { uid: number }) => {
 						},
 						{
 							key: "commentCount",
-							label: "评论数目",
+							label: t("mine.profile.commentCount"),
 							value: data.commentCount,
 							onPress: () => {
 								goWebview("#/comments");
@@ -64,7 +66,7 @@ export const MineView = ({ uid }: { uid: number }) => {
 						},
 						{
 							key: "favoriteCount",
-							label: "收藏项数",
+							label: t("mine.profile.favoriteCount"),
 							value: data.favoriteCount,
 							onPress: () => {
 								goWebview("#/collections");

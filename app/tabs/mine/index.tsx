@@ -1,5 +1,6 @@
 import { Header } from "@react-navigation/elements";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useStore } from "zustand";
@@ -13,6 +14,7 @@ import { userStore } from "@/store/userStore";
 const Screen = () => {
 	const navigation = useNavigation();
 	const uid = useStore(userStore, (s) => s.id);
+	const { t } = useTranslation();
 
 	return (
 		<RNScreensSafeAreaView
@@ -28,7 +30,7 @@ const Screen = () => {
 				}}
 			>
 				<Header
-					title={uid ? "您好！" : ""}
+					title={uid ? t("tabs.mine.title") : ""}
 					headerTransparent
 					headerRight={() => {
 						return (

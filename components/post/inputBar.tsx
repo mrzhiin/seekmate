@@ -6,6 +6,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, TextInput, ToastAndroid, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import WebView, { type WebViewMessageEvent } from "react-native-webview";
@@ -137,6 +138,7 @@ export const InputBar = ({
 }) => {
 	const boxShadowColor = useCSSVariableString("--color-border");
 	const linearColor = useCSSVariableString("--color-background");
+	const { t } = useTranslation();
 	const [isLoading, setIsLoading] = useState(false);
 	const [text, setText] = useState("");
 	const [isWebview, setIsWebview] = useState(false);
@@ -184,7 +186,7 @@ export const InputBar = ({
 		timeoutRef.current = setTimeout(() => {
 			if (pendingSubmissionRef.current?.requestId !== requestId) return;
 			resetSubmission();
-			ToastAndroid.show("评论回复超时", ToastAndroid.SHORT);
+			ToastAndroid.show(t("post.inputBar.timeout"), ToastAndroid.SHORT);
 		}, 5000);
 	};
 
@@ -229,12 +231,12 @@ export const InputBar = ({
 			if (message.success) {
 				setText("");
 				onPost?.();
-				ToastAndroid.show("评论回复成功 !", ToastAndroid.SHORT);
+				ToastAndroid.show(t("post.inputBar.success"), ToastAndroid.SHORT);
 			} else {
-				ToastAndroid.show("评论回复失败", ToastAndroid.SHORT);
+				ToastAndroid.show(t("post.inputBar.failed"), ToastAndroid.SHORT);
 			}
 		} catch (_) {
-			ToastAndroid.show("评论回复失败", ToastAndroid.SHORT);
+			ToastAndroid.show(t("post.inputBar.failed"), ToastAndroid.SHORT);
 		} finally {
 			if (shouldResetSubmission) {
 				resetSubmission();
@@ -286,7 +288,7 @@ export const InputBar = ({
 					multiline
 					numberOfLines={4}
 					autoFocus={false}
-					placeholder="鼓励友善发言，禁止人身攻击"
+					placeholder={t("post.inputBar.placeholder")}
 					className="font-sans text-base text-foreground flex-1 pl-2"
 					readOnly={isLoading}
 				/>

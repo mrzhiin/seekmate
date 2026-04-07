@@ -35,6 +35,14 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 				},
 			},
 		],
+		[
+			"expo-localization",
+			{
+				supportedLocales: {
+					android: ["en", "zh-Hans"],
+				},
+			},
+		],
 	];
 
 	if (

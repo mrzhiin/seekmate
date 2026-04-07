@@ -1,5 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useMMKVObject } from "react-native-mmkv";
@@ -15,6 +16,7 @@ const MaxKeywordSize = 10;
 
 const Screen = () => {
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 	const [keyword, setKeyword] = useState("");
 	const [keywords, setKeywords] = useMMKVObject<string[]>(
 		StorageKey.SearchKeywords,
@@ -50,7 +52,7 @@ const Screen = () => {
 				return (
 					<SearchBar
 						autoFocus
-						placeholder="搜索"
+						placeholder={t("search.placeholder")}
 						onSubmitEditing={(e) => {
 							handleSearch(e);
 						}}
@@ -58,7 +60,7 @@ const Screen = () => {
 				);
 			},
 		});
-	}, [navigation, handleSearch]);
+	}, [navigation, handleSearch, t]);
 
 	return (
 		<>

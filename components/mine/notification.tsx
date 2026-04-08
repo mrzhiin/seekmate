@@ -1,5 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
+import { useEffect } from "react";
 import { View } from "react-native";
+import { useMineRefreshContext } from "@/components/mine/mineView";
 import { Text } from "@/components/ui/text";
 import { useNotificationQuery } from "@/hooks/services/useNotificationQuery";
 import { config } from "@/lib/config";
@@ -7,8 +9,19 @@ import { ScreenName } from "@/stack/screenName";
 import { Pressable } from "../pressable";
 
 export const Notification = () => {
+	const { registerRefresh, unregisterRefresh } = useMineRefreshContext();
 	const navigation = useNavigation();
-	const { data } = useNotificationQuery();
+	const { data, refetch } = useNotificationQuery();
+
+	useEffect(() => {
+		const refresh = () => refetch();
+
+		registerRefresh(refresh);
+
+		return () => {
+			unregisterRefresh(refresh);
+		};
+	}, [refetch, registerRefresh, unregisterRefresh]);
 
 	return (
 		<Pressable

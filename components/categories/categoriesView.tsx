@@ -1,4 +1,5 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
+import { useRef } from "react";
 import { View } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { CategoryIcons } from "@/components/icon/CategoryIcon";
@@ -10,11 +11,15 @@ import { ScreenName } from "@/stack/screenName";
 
 export const CategoriesView = () => {
 	const navigation = useNavigation();
+	const scrollViewRef = useRef<ScrollView>(null);
 	const { data, refetch } = useCategoriesSuspenseQuery();
 	const { isRefreshing, refresh } = useRefresh(refetch);
 
+	useScrollToTop(scrollViewRef);
+
 	return (
 		<ScrollView
+			ref={scrollViewRef}
 			showsHorizontalScrollIndicator={false}
 			showsVerticalScrollIndicator={false}
 			className="flex-1"

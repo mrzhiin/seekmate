@@ -1,5 +1,5 @@
 import { Header } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
@@ -17,10 +17,13 @@ const Screen = () => {
 	const navigation = useNavigation();
 	const uid = useStore(userStore, (s) => s.id);
 	const mineViewRef = useRef<MineViewRef>(null);
+	const scrollViewRef = useRef<ScrollView>(null);
 
 	const { isRefreshing, refresh } = useRefresh(async () => {
 		await mineViewRef.current?.refresh();
 	});
+
+	useScrollToTop(scrollViewRef);
 
 	return (
 		<RNScreensSafeAreaView
@@ -29,6 +32,7 @@ const Screen = () => {
 			}}
 		>
 			<ScrollView
+				ref={scrollViewRef}
 				refreshControl={
 					uid ? (
 						<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />

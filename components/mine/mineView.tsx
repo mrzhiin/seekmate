@@ -1,4 +1,13 @@
 import { useNavigation } from "@react-navigation/native";
+import {
+	createContext,
+	type Ref,
+	useCallback,
+	useContext,
+	useImperativeHandle,
+	useMemo,
+	useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Pressable } from "react-native-gesture-handler";
@@ -14,11 +23,32 @@ import { config } from "@/lib/config";
 import { ScreenName } from "@/stack/screenName";
 import { userStore } from "@/store/userStore";
 
-export const MineView = ({ uid }: { uid: number }) => {
-	const { data } = useUserSuspenseQuery(uid);
+type MineRefreshContextValue = {
+	registerRefresh: (refresh: () => Promise<unknown> | unknown) => void;
+	unregisterRefresh: (refresh: () => Promise<unknown> | unknown) => void;
+};
+
+export const MineRefreshContext = createContext<MineRefreshContextValue>({
+	registerRefresh: () => {},
+	unregisterRefresh: () => {},
+});
+
+export type MineViewRef = {
+	refresh: () => Promise<void>;
+};
+
+export const MineView = ({
+	uid,
+	ref,
+}: {
+	uid: number;
+	ref?: Ref<MineViewRef>;
+}) => {
+	const { data, refetch } = useUserSuspenseQuery(uid);
 	const navigation = useNavigation();
 	const { t } = useTranslation();
 	const userId = useStore(userStore, (s) => s.id);
+	const refreshSetRef = useRef(new Set<() => Promise<unknown> | unknown>());
 
 	const goWebview = (hash: string) => {
 		const url = new URL(`space/${userId}`, config.siteUrl);
@@ -29,8 +59,45 @@ export const MineView = ({ uid }: { uid: number }) => {
 		});
 	};
 
+	const registerRefresh = useCallback(
+		(refresh: () => Promise<unknown> | unknown) => {
+			refreshSetRef.current.add(refresh);
+		},
+		[],
+	);
+
+	const unregisterRefresh = useCallback(
+		(refresh: () => Promise<unknown> | unknown) => {
+			refreshSetRef.current.delete(refresh);
+		},
+		[],
+	);
+
+	const refresh = useCallback(async () => {
+		await Promise.allSettled([
+			refetch(),
+			...Array.from(refreshSetRef.current, (runRefresh) => runRefresh()),
+		]);
+	}, [refetch]);
+
+	useImperativeHandle(
+		ref,
+		() => ({
+			refresh,
+		}),
+		[refresh],
+	);
+
+	const contextValue = useMemo(
+		() => ({
+			registerRefresh,
+			unregisterRefresh,
+		}),
+		[registerRefresh, unregisterRefresh],
+	);
+
 	return (
-		<>
+		<MineRefreshContext.Provider value={contextValue}>
 			<View className="items-center gap-4">
 				<Avatar size={128} uid={data.uid} />
 				<View className="gap-1 items-center">
@@ -97,6 +164,8 @@ export const MineView = ({ uid }: { uid: number }) => {
 					<Notification />
 				</View>
 			</View>
-		</>
+		</MineRefreshContext.Provider>
 	);
 };
+
+export const useMineRefreshContext = () => useContext(MineRefreshContext);

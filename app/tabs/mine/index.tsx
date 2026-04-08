@@ -1,13 +1,16 @@
 import { Header } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useStore } from "zustand";
 import { MineResolver } from "@/components/mine/mineResolver";
+import type { MineViewRef } from "@/components/mine/mineView";
 import { Pressable } from "@/components/pressable";
 import { SignInPrompt } from "@/components/signInPrompt";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
+import { useRefresh } from "@/hooks/useRefresh";
 import { ScreenName } from "@/stack/screenName";
 import { userStore } from "@/store/userStore";
 
@@ -15,6 +18,14 @@ const Screen = () => {
 	const navigation = useNavigation();
 	const uid = useStore(userStore, (s) => s.id);
 	const { t } = useTranslation();
+	const mineViewRef = useRef<MineViewRef>(null);
+	const scrollViewRef = useRef<ScrollView>(null);
+
+	const { isRefreshing, refresh } = useRefresh(async () => {
+		await mineViewRef.current?.refresh();
+	});
+
+	useScrollToTop(scrollViewRef);
 
 	return (
 		<RNScreensSafeAreaView
@@ -23,6 +34,12 @@ const Screen = () => {
 			}}
 		>
 			<ScrollView
+				ref={scrollViewRef}
+				refreshControl={
+					uid ? (
+						<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
+					) : undefined
+				}
 				showsHorizontalScrollIndicator={false}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{
@@ -49,7 +66,7 @@ const Screen = () => {
 						);
 					}}
 				/>
-				{uid ? <MineResolver uid={uid} /> : <SignInPrompt />}
+				{uid ? <MineResolver ref={mineViewRef} uid={uid} /> : <SignInPrompt />}
 			</ScrollView>
 		</RNScreensSafeAreaView>
 	);

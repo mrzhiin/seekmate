@@ -1,11 +1,11 @@
-import { LegendList } from "@legendapp/list/react-native";
+import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import { batch, type observable } from "@legendapp/state";
 import { Computed, observer, useObservable } from "@legendapp/state/react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { Pressable } from "@/components/pressable";
@@ -177,6 +177,7 @@ export const PostList = ({
 };
 
 export const PostListView = ({ query }: { query: PostListQuery }) => {
+	const listRef = useRef<LegendListRef | null>(null);
 	const postsById$ = useObservable<Record<number, Post>>({});
 	const navigation = useNavigation();
 	const queryClient = useQueryClient();
@@ -208,6 +209,8 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 	}, [queryClient, queryKey, refetch]);
 
 	const { isRefreshing, refresh } = useRefresh(refreshFirstPage);
+
+	useScrollToTop(listRef);
 
 	const posts = useMemo(() => {
 		const _posts = data?.pages.flatMap((x) => x.posts);
@@ -288,6 +291,7 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 
 	return (
 		<LegendList
+			ref={listRef}
 			style={{
 				flex: 1,
 			}}

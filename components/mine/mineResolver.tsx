@@ -1,10 +1,16 @@
-import { Suspense } from "react";
+import { type Ref, Suspense } from "react";
 import { View } from "react-native";
 import { ErrorBoundary } from "../errorBoundary";
 import { Spinner } from "../spinner";
-import { MineView } from "./mineView";
+import { MineView, type MineViewRef } from "./mineView";
 
-export const MineResolver = ({ uid }: { uid: number }) => {
+export const MineResolver = ({
+	uid,
+	ref,
+}: {
+	uid: number;
+	ref?: Ref<MineViewRef>;
+}) => {
 	return (
 		<ErrorBoundary>
 			<Suspense
@@ -14,7 +20,7 @@ export const MineResolver = ({ uid }: { uid: number }) => {
 					</View>
 				}
 			>
-				<MineView uid={uid} />
+				<MineView ref={ref} uid={uid} />
 			</Suspense>
 		</ErrorBoundary>
 	);

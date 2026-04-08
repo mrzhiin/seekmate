@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ToastAndroid, View } from "react-native";
 import WebView, { type WebViewMessageEvent } from "react-native-webview";
+import { useMineRefreshContext } from "@/components/mine/mineView";
 import { Text } from "@/components/ui/text";
 import { useAttendanceQuery } from "@/hooks/services/useAttendanceQuery";
 import { config } from "@/lib/config";
@@ -14,6 +15,7 @@ import { Pressable } from "../pressable";
 import { MaterialDesignIcons } from "../ui/materialDesignIcons";
 
 export const Attendance = () => {
+	const { registerRefresh, unregisterRefresh } = useMineRefreshContext();
 	const webViewRef = useRef<WebView>(null);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +72,16 @@ export const Attendance = () => {
 		setIsWebview(true);
 		setIsSubmitting(true);
 	};
+
+	useEffect(() => {
+		const refresh = () => refetch();
+
+		registerRefresh(refresh);
+
+		return () => {
+			unregisterRefresh(refresh);
+		};
+	}, [refetch, registerRefresh, unregisterRefresh]);
 
 	return (
 		<Pressable

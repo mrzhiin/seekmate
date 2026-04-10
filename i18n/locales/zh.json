@@ -1,0 +1,118 @@
+{
+	"common": {
+		"appName": "SeekMate",
+		"confirm": "确认",
+		"cancel": "取消",
+		"retry": "重试"
+	},
+	"auth": {
+		"title": "登录",
+		"signInPrompt": {
+			"welcome": "欢迎",
+			"description": "开始使用",
+			"signIn": "登录",
+			"register": "注册"
+		}
+	},
+	"tabs": {
+		"home": {
+			"tab": "首页",
+			"newPosts": "新帖子",
+			"newReplies": "新评论"
+		},
+		"categories": {
+			"title": "板块",
+			"tab": "版块"
+		},
+		"mine": {
+			"title": "您好！",
+			"tab": "我的"
+		}
+	},
+	"search": {
+		"placeholder": "搜索"
+	},
+	"settings": {
+		"title": "设置",
+		"about": "关于",
+		"version": "版本",
+		"github": "Github",
+		"githubSubtitle": "感谢您的反馈",
+		"siteSubtitle": "A place for people who love web development, hosting, VPS / servers and other geeky things",
+		"user": {
+			"logout": "登出",
+			"logoutDescription": "退出当前账户",
+			"signIn": "登入",
+			"signInDescription": "开始使用",
+			"confirmLogout": "确认退出？"
+		},
+		"autoCheckIn": {
+			"label": "自动签到",
+			"description": "启动时尝试签到"
+		},
+		"checkIn": {
+			"label": "签到方式",
+			"fixed": "固定",
+			"random": "随机"
+		},
+		"locale": "语言",
+		"clearImageCache": {
+			"label": "清理图片缓存",
+			"description": "删除已缓存图片资源，释放空间",
+			"title": "清理图片缓存",
+			"message": "确认清理当前设备上的图片缓存吗？",
+			"success": "图片缓存已清理",
+			"partial": "部分图片缓存未能清理",
+			"failed": "图片缓存清理失败"
+		}
+	},
+	"post": {
+		"original": {
+			"poster": "楼主"
+		},
+		"inputBar": {
+			"placeholder": "鼓励友善发言，禁止人身攻击",
+			"timeout": "评论回复超时",
+			"success": "评论回复成功！",
+			"failed": "评论回复失败"
+		},
+		"menu": {
+			"openInBrowser": "在浏览器中打开"
+		}
+	},
+	"mine": {
+		"rank": {
+			"currentLevel": "当前等级 Lv.{{level}}",
+			"nextLevelDistance": "距离下一等级"
+		},
+		"profile": {
+			"postCount": "主题帖数",
+			"commentCount": "评论数目",
+			"favoriteCount": "收藏项数",
+			"level": "Lv.{{level}}"
+		},
+		"notification": {
+			"unreadCount": "未读数"
+		},
+		"attendance": {
+			"success": "签到成功",
+			"failed": "签到失败！",
+			"error": "签到出错！",
+			"signedIn": "已签到 +{{coins}}",
+			"signingIn": "签到中",
+			"loading": "加载中",
+			"notSignedIn": "未签到"
+		}
+	},
+	"errorFallback": {
+		"title": "错误",
+		"message": "糟糕！出了点问题",
+		"retry": "重试"
+	},
+	"list": {
+		"footer": {
+			"loadingMore": "上拉加载更多",
+			"allLoaded": "已全部加载"
+		}
+	}
+}

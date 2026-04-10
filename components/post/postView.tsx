@@ -6,6 +6,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { type ScrollViewProps, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import {
@@ -50,6 +51,7 @@ export const PostView = ({
 }) => {
 	const navigation = useNavigation();
 	const userId = useStore(userStore, (s) => s.id);
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const inputBarRef = useRef<InputBar>(null);
 	const trueSheetRef = useRef<TrueSheetMenu>(null);
@@ -309,7 +311,7 @@ export const PostView = ({
 					{
 						key: "open",
 						icon: "open-in-new",
-						label: "在浏览器中打开",
+						label: t("post.menu.openInBrowser"),
 						onPress: () => {
 							const url = new URL(`post-${id}-1`, config.apiBaseUrl);
 							Linking.openURL(url.toString());

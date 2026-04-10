@@ -54,10 +54,11 @@ export const useSearchInfinitePostsQuery = ({
 	keyword?: string;
 }) => {
 	const userId = useStore(userStore, (s) => s.id);
+	const queryKey = ["search", keyword, userId] as const;
 	const result = useInfiniteQuery({
 		enabled: Boolean(keyword),
 		retry: false,
-		queryKey: ["search", keyword, userId],
+		queryKey,
 		queryFn: async ({ pageParam }) => {
 			const res = await nsClient.get("search", {
 				baseURL: config.siteUrl,
@@ -80,5 +81,8 @@ export const useSearchInfinitePostsQuery = ({
 		},
 	});
 
-	return result;
+	return {
+		...result,
+		queryKey,
+	};
 };

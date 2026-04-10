@@ -3,6 +3,7 @@ import { Computed, observer, useValue } from "@legendapp/state/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
@@ -19,6 +20,7 @@ export const Comment = observer(
 		posterUserId?: number;
 		onReply?: () => void;
 	}) => {
+		const { t } = useTranslation();
 		const item$ = props.item$;
 		const createdAt = useValue(item$.createdAt);
 		const floor = useValue(item$.floor);
@@ -45,7 +47,7 @@ export const Comment = observer(
 									{isPoster && (
 										<View className="rounded-xl px-1.5 py-0.5 bg-primary justify-center items-center">
 											<Text className="text-xs text-primary-foreground">
-												楼主
+												{t("post.original.poster")}
 											</Text>
 										</View>
 									)}

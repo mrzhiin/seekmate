@@ -1,4 +1,5 @@
 import { Host, Switch } from "@expo/ui/jetpack-compose";
+import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { appStore } from "@/store/appStore";
 import { Item } from "./Item";
@@ -6,6 +7,7 @@ import { Item } from "./Item";
 export const AuthCheckIn = () => {
 	const autoCheckIn = useStore(appStore, (s) => s.autoCheckIn);
 	const update = useStore(appStore, (s) => s.update);
+	const { t } = useTranslation();
 
 	const toggleAutoCheckIn = () => {
 		update({ autoCheckIn: !autoCheckIn });
@@ -13,8 +15,8 @@ export const AuthCheckIn = () => {
 
 	return (
 		<Item
-			label="自动签到"
-			subLabel="启动时尝试签到"
+			label={t("settings.autoCheckIn.label")}
+			subLabel={t("settings.autoCheckIn.description")}
 			right={
 				<Host matchContents>
 					<Switch value={autoCheckIn} onCheckedChange={toggleAutoCheckIn} />

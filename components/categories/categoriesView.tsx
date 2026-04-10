@@ -53,7 +53,7 @@ export const CategoriesView = () => {
 				})}
 			</View>
 			{/* <View className="px-4 mt-12 gap-4">
-					<Text className="text-base">推荐</Text>
+					<Text className="text-base">Recommended</Text>
 					<Advertise />
 				</View> */}
 		</ScrollView>

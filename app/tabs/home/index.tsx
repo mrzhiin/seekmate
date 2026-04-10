@@ -2,6 +2,7 @@ import { Header } from "@react-navigation/elements";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { PostList } from "@/components/post/postList";
 import { Pressable } from "@/components/pressable";
@@ -12,6 +13,7 @@ const Tab = createMaterialTopTabNavigator();
 
 const Screen = () => {
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 
 	const PostsSortByReplyTime = useMemo(() => {
 		return () => <PostList sortBy="replyTime" />;
@@ -30,7 +32,7 @@ const Screen = () => {
 			}}
 		>
 			<Header
-				title="SeekMate"
+				title={t("common.appName")}
 				headerShadowVisible={false}
 				headerRight={() => {
 					return (
@@ -60,8 +62,16 @@ const Screen = () => {
 					lazy: true,
 				}}
 			>
-				<Tab.Screen name="新帖子" component={PostList} />
-				<Tab.Screen name="新评论" component={PostsSortByReplyTime} />
+				<Tab.Screen
+					name="newPosts"
+					component={PostList}
+					options={{ tabBarLabel: t("tabs.home.newPosts") }}
+				/>
+				<Tab.Screen
+					name="newReplies"
+					component={PostsSortByReplyTime}
+					options={{ tabBarLabel: t("tabs.home.newReplies") }}
+				/>
 			</Tab.Navigator>
 		</RNScreensSafeAreaView>
 	);

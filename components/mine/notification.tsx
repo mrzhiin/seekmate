@@ -1,5 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useMineRefreshContext } from "@/components/mine/mineView";
 import { Text } from "@/components/ui/text";
@@ -12,6 +13,7 @@ export const Notification = () => {
 	const { registerRefresh, unregisterRefresh } = useMineRefreshContext();
 	const navigation = useNavigation();
 	const { data, refetch } = useNotificationQuery();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const refresh = () => refetch();
@@ -36,7 +38,7 @@ export const Notification = () => {
 				<View className="grow items-center justify-center">
 					<Text className="text-xl">{data?.unreadCount ?? "-"}</Text>
 				</View>
-				<Text className="text-base">未读数</Text>
+				<Text className="text-base">{t("mine.notification.unreadCount")}</Text>
 			</View>
 		</Pressable>
 	);

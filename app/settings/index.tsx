@@ -2,6 +2,7 @@ import type { MaterialDesignIconsIconName } from "@react-native-vector-icons/mat
 import { useNavigation } from "@react-navigation/native";
 import * as Application from "expo-application";
 import { type ReactNode, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Pressable } from "@/components/pressable";
@@ -9,6 +10,7 @@ import { AuthCheckIn } from "@/components/settings/autoCheckIn";
 import { CheckIn } from "@/components/settings/checkIn";
 import { ClearImageCache } from "@/components/settings/clearImageCache";
 import { Link } from "@/components/settings/link";
+import { Locale } from "@/components/settings/locale";
 import { User } from "@/components/settings/user";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { Text } from "@/components/ui/text";
@@ -49,12 +51,13 @@ const Item = ({
 
 const Screen = () => {
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		navigation.setOptions({
-			title: "设置",
+			title: t("settings.title"),
 		});
-	}, [navigation]);
+	}, [navigation, t]);
 
 	return (
 		<ScrollView>
@@ -63,18 +66,23 @@ const Screen = () => {
 				<AuthCheckIn />
 				<CheckIn />
 				<ClearImageCache />
-				<Label text="关于" />
+				<Locale />
+				<Label text={t("settings.about")} />
 				<Item
-					label="版本"
+					label={t("settings.version")}
 					subLabel={Application.nativeApplicationVersion || "-"}
 				/>
 				{config.githubUrl && (
-					<Link uri={config.githubUrl} label="Github" subLabel="感谢您的反馈" />
+					<Link
+						uri={config.githubUrl}
+						label={t("settings.github")}
+						subLabel={t("settings.githubSubtitle")}
+					/>
 				)}
 				<Link
 					uri={config.siteUrl}
 					label="NodeSeek"
-					subLabel="Nodeseek is a place for people who love web development, hosting, vps / server and other geek things"
+					subLabel={t("settings.siteSubtitle")}
 				/>
 			</View>
 		</ScrollView>

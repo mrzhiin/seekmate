@@ -36,7 +36,7 @@ export const Comment = observer(
 
 		return (
 			<View className="flex-row py-4 px-4 gap-2">
-				<Avatar uid={authorUid} size={40} jump />
+				<Avatar uid={authorUid} size={40} jump showRank />
 				<View className="flex-1">
 					<View className="flex-row">
 						<View className="flex-1 gap-1">

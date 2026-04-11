@@ -46,7 +46,9 @@ const PostItem = observer(
 			<Pressable onPress={onPress} className="flex-row gap-4 px-4 py-4">
 				<Computed>
 					{() => {
-						return <Avatar size={40} uid={item$.author.uid.get()} jump />;
+						return (
+							<Avatar size={40} uid={item$.author.uid.get()} jump showRank />
+						);
 					}}
 				</Computed>
 				<View className="gap-2 flex-1">

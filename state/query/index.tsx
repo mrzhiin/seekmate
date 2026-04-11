@@ -1,11 +1,22 @@
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { asyncStoragePersister, queryClient } from "@/lib/query";
 
 export const QueryProvider = (props: React.PropsWithChildren) => {
 	const { children } = props;
 
 	return (
-		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		<PersistQueryClientProvider
+			client={queryClient}
+			persistOptions={{
+				persister: asyncStoragePersister,
+				maxAge: 1000 * 60 * 60 * 24,
+				dehydrateOptions: {
+					shouldDehydrateQuery: (query) => query.meta?.persist === true,
+				},
+			}}
+		>
+			{children}
+		</PersistQueryClientProvider>
 	);
 };
 

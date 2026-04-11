@@ -1,7 +1,16 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import PQueue from "p-queue";
 import * as v from "valibot";
 import { nsClient } from "@/lib/http/client";
+
+const queue = new PQueue({
+	concurrency: 1,
+	intervalCap: 1,
+	interval: 1000,
+	carryoverIntervalCount: true,
+});
+const ONE_HOUR_MS = 1000 * 60 * 60;
 
 const UserResSchema = v.object({
 	member_id: v.number(),
@@ -62,4 +71,43 @@ export const useUserSuspenseQuery = (uid: number) => {
 	});
 
 	return result;
+};
+
+export const useRashUserQuery = (uid: number, enabled = true) => {
+	return useQuery({
+		enabled,
+		staleTime: ONE_HOUR_MS,
+		gcTime: ONE_HOUR_MS,
+		meta: {
+			persist: true,
+		},
+		queryKey: ["rash", "api/account/getInfo/", uid],
+		queryFn: () => {
+			return queue.add(async () => {
+				const res = await nsClient.get(`api/account/getInfo/${uid}`);
+				const resData = res.data;
+				const result = v.safeParse(UserSuccessResSchema, resData);
+
+				if (!result.success) {
+					throw new Error("API getInfo fail");
+				}
+
+				const detail = result.output.detail;
+
+				return {
+					uid: detail.member_id,
+					name: detail.member_name,
+					rank: detail.rank,
+					createdAt: dayjs(detail.created_at).valueOf(),
+					coinCount: detail.coin,
+					stardustCount: detail.stardust,
+					postCount: detail.nPost,
+					commentCount: detail.nComment,
+					favoriteCount: detail.collectionCount,
+					followingCount: detail.follows,
+					followerCount: detail.fans,
+				};
+			});
+		},
+	});
 };

@@ -59,6 +59,7 @@ export const TrueSheetMenu = ({
 				}}
 			>
 				<View className="pt-8 pb-6">
+					{children}
 					{menus.map((x) => {
 						return (
 							<Pressable
@@ -83,7 +84,6 @@ export const TrueSheetMenu = ({
 					})}
 				</View>
 			</GestureHandlerRootView>
-			{children}
 		</TrueSheet>
 	);
 };

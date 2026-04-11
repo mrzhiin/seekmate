@@ -1,23 +1,33 @@
 import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import { batch, type observable } from "@legendapp/state";
-import { Computed, observer, useObservable } from "@legendapp/state/react";
+import {
+	Computed,
+	Memo,
+	observer,
+	useObservable,
+} from "@legendapp/state/react";
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import * as Linking from "expo-linking";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
 import { useInfinitePostsQuery } from "@/hooks/services/useInfinitePostsQuery";
 import { useRefresh } from "@/hooks/useRefresh";
+import { config } from "@/lib/config";
 import type { Post } from "@/lib/parser";
 import { ScreenName } from "@/stack/screenName";
 import { Avatar } from "../avatar";
 import { ErrorFallback } from "../errorFallback";
 import { Spinner } from "../spinner";
+import { TrueSheetMenu } from "../trueSheet";
 import { MaterialDesignIcons } from "../ui/materialDesignIcons";
+import { UserItem } from "./userItem";
 
 dayjs.extend(relativeTime);
 
@@ -38,12 +48,18 @@ const PostItem = observer(
 	({
 		item$,
 		onPress,
+		onLongPress,
 	}: {
 		item$: ReturnType<typeof observable<Post>>;
 		onPress?: () => void;
+		onLongPress?: () => void;
 	}) => {
 		return (
-			<Pressable onPress={onPress} className="flex-row gap-4 px-4 py-4">
+			<Pressable
+				onPress={onPress}
+				onLongPress={onLongPress}
+				className="flex-row gap-4 px-4 py-4"
+			>
 				<Computed>
 					{() => {
 						return (
@@ -181,8 +197,12 @@ export const PostList = ({
 export const PostListView = ({ query }: { query: PostListQuery }) => {
 	const listRef = useRef<LegendListRef | null>(null);
 	const postsById$ = useObservable<Record<number, Post>>({});
+	const [currentPostId, setCurrentPostId] = useState<number | null>(null);
 	const navigation = useNavigation();
+	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+
 	const {
 		data,
 		fetchNextPage,
@@ -212,8 +232,6 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 
 	const { isRefreshing, refresh } = useRefresh(refreshFirstPage);
 
-	useScrollToTop(listRef);
-
 	const posts = useMemo(() => {
 		const _posts = data?.pages.flatMap((x) => x.posts);
 
@@ -237,6 +255,32 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 		[],
 	);
 
+	const renderItem = useCallback(
+		({ item }: { item: Post; index: number }) => {
+			const item$ = postsById$[item.id];
+
+			if (item$.peek()) {
+				return (
+					<PostItem
+						item$={item$}
+						onPress={() => {
+							navigation.navigate(ScreenName.Post, {
+								id: item.id,
+							});
+						}}
+						onLongPress={() => {
+							setCurrentPostId(item.id);
+							trueSheetMenuRef.current?.present();
+						}}
+					/>
+				);
+			} else {
+				return null;
+			}
+		},
+		[postsById$, navigation],
+	);
+
 	useEffect(() => {
 		if (posts?.length) {
 			batch(() => {
@@ -253,27 +297,7 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 		}
 	}, [posts, postsById$]);
 
-	const renderItem = useCallback(
-		({ item }: { item: Post; index: number }) => {
-			const item$ = postsById$[item.id];
-
-			if (item$.peek()) {
-				return (
-					<PostItem
-						item$={item$}
-						onPress={() => {
-							navigation.navigate(ScreenName.Post, {
-								id: item.id,
-							});
-						}}
-					/>
-				);
-			} else {
-				return null;
-			}
-		},
-		[postsById$, navigation],
-	);
+	useScrollToTop(listRef);
 
 	if (isLoading) {
 		return (
@@ -292,27 +316,59 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 	}
 
 	return (
-		<LegendList
-			ref={listRef}
-			style={{
-				flex: 1,
-			}}
-			data={posts}
-			renderItem={renderItem}
-			keyExtractor={(item) => item.id.toString()}
-			recycleItems
-			showsHorizontalScrollIndicator={false}
-			showsVerticalScrollIndicator={false}
-			refreshControl={
-				<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
-			}
-			onEndReached={() => {
-				if (hasNextPage && !isFetchingNextPage) {
-					fetchNextPage();
+		<>
+			<LegendList
+				ref={listRef}
+				style={{
+					flex: 1,
+				}}
+				data={posts}
+				renderItem={renderItem}
+				keyExtractor={(item) => item.id.toString()}
+				recycleItems
+				showsHorizontalScrollIndicator={false}
+				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
 				}
-			}}
-			ItemSeparatorComponent={Separator}
-			estimatedItemSize={112}
-		/>
+				onEndReached={() => {
+					if (hasNextPage && !isFetchingNextPage) {
+						fetchNextPage();
+					}
+				}}
+				ItemSeparatorComponent={Separator}
+				estimatedItemSize={112}
+			/>
+			<TrueSheetMenu
+				ref={trueSheetMenuRef}
+				menus={[
+					{
+						key: "open",
+						icon: "open-in-new",
+						label: t("post.menu.openInBrowser"),
+						onPress: () => {
+							if (currentPostId) {
+								const url = new URL(
+									`post-${currentPostId}-1`,
+									config.apiBaseUrl,
+								);
+								Linking.openURL(url.toString());
+							}
+						},
+					},
+				]}
+			>
+				<Memo>
+					{() => {
+						if (currentPostId) {
+							const uid = postsById$[currentPostId].author.uid.get();
+							return <UserItem uid={uid} />;
+						} else {
+							return null;
+						}
+					}}
+				</Memo>
+			</TrueSheetMenu>
+		</>
 	);
 };

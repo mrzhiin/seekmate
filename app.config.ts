@@ -3,7 +3,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
-const AndroidVersionCode = 2;
+const AndroidVersionCode = 3;
 
 const config = ({ config }: ConfigContext): ExpoConfig => {
 	const extra = v.parse(ExpoExtraSchema, {

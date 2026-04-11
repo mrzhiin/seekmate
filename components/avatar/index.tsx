@@ -1,21 +1,22 @@
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { useRashUserQuery } from "@/hooks/services/useUserQuery";
 import { config } from "@/lib/config";
+import { UserItem } from "../post/userItem";
 import { Pressable } from "../pressable";
+import { TrueSheetMenu } from "../trueSheet";
 
 export const Avatar = ({
 	uid,
 	size = 32,
-	jump = false,
 	showRank = false,
 }: {
 	uid?: number;
 	size?: number;
-	jump?: boolean;
 	showRank?: boolean;
 }) => {
 	const avatarHref = useMemo(() => {
@@ -23,59 +24,75 @@ export const Avatar = ({
 			? new URL(`avatar/${uid}.png`, config.apiBaseUrl).toString()
 			: null;
 	}, [uid]);
-
+	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
 	const user = useRashUserQuery(uid || 0, Boolean(uid && showRank));
+	const { t } = useTranslation();
 
 	if (!avatarHref) {
 		return null;
 	}
 
 	return (
-		<Pressable
-			className="border-border border-2 bg-muted"
-			style={{
-				width: size,
-				height: size,
-				borderRadius: size,
-				padding: 1,
-				position: "relative",
-			}}
-			onPress={() => {
-				if (jump) {
-					const url = new URL(`space/${uid}`, config.siteUrl);
-					Linking.openURL(url.toString());
-				}
-			}}
-		>
-			<Image
-				source={avatarHref}
+		<>
+			<Pressable
+				className="border-border border-2 bg-muted"
 				style={{
-					flex: 1,
+					width: size,
+					height: size,
 					borderRadius: size,
+					padding: 1,
+					position: "relative",
 				}}
-			/>
-			{typeof user.data?.rank === "number" && (
-				<View
+				onPress={() => {
+					trueSheetMenuRef.current?.present();
+				}}
+			>
+				<Image
+					source={avatarHref}
 					style={{
-						position: "absolute",
-						bottom: 0,
-						right: 0,
-						height: 12,
-						aspectRatio: 1,
+						flex: 1,
+						borderRadius: size,
 					}}
-					className="bg-primary-foreground rounded-full justify-center items-center border border-border"
-				>
-					<Text
-						className="text-primary font-semibold"
+				/>
+				{typeof user.data?.rank === "number" && (
+					<View
 						style={{
-							fontSize: 8,
-							lineHeight: 8,
+							position: "absolute",
+							bottom: 0,
+							right: 0,
+							height: 12,
+							aspectRatio: 1,
 						}}
+						className="bg-primary-foreground rounded-full justify-center items-center border border-border"
 					>
-						{user.data.rank}
-					</Text>
-				</View>
-			)}
-		</Pressable>
+						<Text
+							className="text-primary font-semibold"
+							style={{
+								fontSize: 8,
+								lineHeight: 8,
+							}}
+						>
+							{user.data.rank}
+						</Text>
+					</View>
+				)}
+			</Pressable>
+			<TrueSheetMenu
+				ref={trueSheetMenuRef}
+				menus={[
+					{
+						key: "open",
+						icon: "open-in-new",
+						label: t("post.menu.openInBrowser"),
+						onPress: () => {
+							const url = new URL(`space/${uid}`, config.siteUrl);
+							Linking.openURL(url.toString());
+						},
+					},
+				]}
+			>
+				{uid ? <UserItem uid={uid} /> : null}
+			</TrueSheetMenu>
+		</>
 	);
 };

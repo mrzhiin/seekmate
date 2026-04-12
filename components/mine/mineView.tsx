@@ -99,7 +99,7 @@ export const MineView = ({
 	return (
 		<MineRefreshContext.Provider value={contextValue}>
 			<View className="items-center gap-4">
-				<Avatar size={128} uid={data.uid} />
+				<Avatar size={128} uid={data.uid} showRank={false} />
 				<View className="gap-1 items-center">
 					<Text className="text-2xl">{data.name}</Text>
 					<View className="flex-row items-center">

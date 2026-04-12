@@ -31,10 +31,12 @@ export const AutoCheckIn = () => {
 				}
 			})
 			.then((res) => {
-				if (res?.success) {
-					ToastAndroid.show(t("mine.attendance.success"), ToastAndroid.SHORT);
-				} else {
-					ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);
+				if (res) {
+					if (res.success) {
+						ToastAndroid.show(t("mine.attendance.success"), ToastAndroid.SHORT);
+					} else {
+						ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);
+					}
 				}
 			});
 

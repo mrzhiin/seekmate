@@ -26,3 +26,57 @@ const res = await fetch(
 return await res.json();
 `;
 };
+
+function generateRandomString(length: number) {
+	let result = "";
+	const chars =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	const charsLength = chars.length;
+	let index = 0;
+	while (index < length) {
+		result += chars.charAt(Math.floor(Math.random() * charsLength));
+		index += 1;
+	}
+	return result;
+}
+
+export const createPostCommentScript = (payload: Record<string, unknown>) => {
+	const url = new URL("api/content/new-comment", config.apiBaseUrl).toString();
+	const t = generateRandomString(16);
+
+	return `
+const data = ${JSON.stringify(payload)};
+const res = await fetch(
+	"${url}",
+	{
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+			"csrf-token": "${t}"
+		},
+	},
+);
+
+let body = null;
+try {
+	body = await res.json();
+} catch (_) {
+	body = null;
+}
+
+if (!res.ok) {
+	throw new Error(
+		JSON.stringify({
+			status: res.status,
+			body,
+		}),
+	);
+}
+
+return {
+	status: res.status,
+	body,
+};
+`;
+};

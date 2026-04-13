@@ -80,3 +80,29 @@ return {
 };
 `;
 };
+
+export const createCollectionScript = (payload: {
+	postId: number;
+	action: "remove" | "add";
+}) => {
+	const url = new URL(
+		"api/statistics/collection",
+		config.apiBaseUrl,
+	).toString();
+
+	return `
+const data = ${JSON.stringify(payload)};
+const res = await fetch(
+	${JSON.stringify(url)},
+	{
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	},
+);
+
+return await res.json();
+`;
+};

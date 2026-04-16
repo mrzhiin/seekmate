@@ -18,9 +18,7 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 		[
 			"expo-build-properties",
 			{
-				android: {
-					buildArchs: ["arm64-v8a", "x86_64"],
-				},
+				android: {},
 			},
 		],
 		["expo-image"],

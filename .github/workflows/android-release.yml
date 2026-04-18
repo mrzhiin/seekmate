@@ -42,13 +42,6 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -68,6 +61,23 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' '${{ secrets.APP_RELEASE_STORE_BASE64 }}' | base64 --decode > ${{ env.APP_RELEASE_STORE_FILE }}
+
+      - name: Prebuild Android project
+        run: pnpm prebuild
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
 
       - name: Build Android AAB
         run: pnpm build

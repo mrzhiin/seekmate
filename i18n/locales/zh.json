@@ -32,6 +32,15 @@
 	"search": {
 		"placeholder": "搜索"
 	},
+	"avatar": {
+		"menu": {
+			"blockUser": "屏蔽用户"
+		},
+		"block": {
+			"success": "屏蔽成功",
+			"failed": "屏蔽失败"
+		}
+	},
 	"settings": {
 		"title": "设置",
 		"about": "关于",

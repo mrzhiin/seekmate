@@ -62,9 +62,7 @@ const PostItem = observer(
 			>
 				<Computed>
 					{() => {
-						return (
-							<Avatar size={40} uid={item$.author.uid.get()} jump showRank />
-						);
+						return <Avatar size={40} uid={item$.author.uid.get()} showRank />;
 					}}
 				</Computed>
 				<View className="gap-2 flex-1">

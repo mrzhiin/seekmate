@@ -32,6 +32,15 @@
 	"search": {
 		"placeholder": "Search"
 	},
+	"avatar": {
+		"menu": {
+			"blockUser": "Block user"
+		},
+		"block": {
+			"success": "User blocked",
+			"failed": "Failed to block user"
+		}
+	},
 	"settings": {
 		"title": "Settings",
 		"about": "About",

@@ -1,24 +1,32 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { produce } from "immer";
-import { useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
-import * as v from "valibot";
+import { useStore } from "zustand";
 import { Text } from "@/components/ui/text";
 import {
 	type usePostOriginalQuery,
 	usePostOriginalQueryKey,
 } from "@/hooks/services/usePostOriginalQuery";
-import { nsClient } from "@/lib/http/client";
 import type { PostPageData } from "@/lib/parser";
 import { queryClient } from "@/lib/query";
+import { WebServiceContext } from "@/state/web";
+import {
+	createAppreciatScript,
+	createCollectionScript,
+	createUpvoteScript,
+} from "@/state/web/scripts";
+import { userStore } from "@/store/userStore";
 import { Avatar } from "../avatar";
 import { Pressable } from "../pressable";
 import { MaterialDesignIcons } from "../ui/materialDesignIcons";
 import { ContentView } from "./contentView";
 
 dayjs.extend(relativeTime);
+
+type PostOriginalData = ReturnType<typeof usePostOriginalQuery>["data"];
 
 export const Original = ({
 	data,
@@ -28,10 +36,6 @@ export const Original = ({
 	data: PostPageData;
 }) => {
 	const { t } = useTranslation();
-	const postOriginalQueryKey = usePostOriginalQueryKey({
-		postId,
-	});
-
 	const [dateDisplay, timeDisplay, relativeDisplay] = useMemo(() => {
 		const createdAt = data?.createdAt;
 
@@ -49,7 +53,7 @@ export const Original = ({
 				{data.title}
 			</Text>
 			<View className="pl-4 pr-2 flex-row items-center gap-3">
-				<Avatar uid={data.author.uid} size={40} jump />
+				<Avatar uid={data.author.uid} size={40} showRank />
 				<View className="flex-1 items-center flex-row gap-x-2 gap-y-1 flex-wrap">
 					<Text className="text-base"> {data.author.name}</Text>
 					<View className="rounded-2xl px-2 py-1 bg-primary justify-center items-center">
@@ -82,80 +86,198 @@ export const Original = ({
 					/>
 				)}
 			</View>
-			<View className="px-2 gap-2 flex-row">
-				{[
-					{
-						icon: data.interactions.isUpvoted
-							? ("thumb-up" as const)
-							: ("thumb-up-outline" as const),
-						label: data.interactions.upvoteCount,
-					},
-					{
-						icon: data.interactions.isDownvoted
-							? ("thumb-down" as const)
-							: ("thumb-down-outline" as const),
-						label: data.interactions.downvoteCount,
-					},
-					{
-						icon: data.interactions.isAppreciated
-							? ("food-drumstick" as const)
-							: ("food-drumstick-outline" as const),
-						label: data.interactions.appreciationCount,
-					},
-					{
-						icon: data.interactions.isFavorited
-							? ("heart" as const)
-							: ("heart-outline" as const),
-						label: data.interactions.favoriteCount,
-						onPress: async () => {
-							const isChecked = data.interactions.isFavorited;
-							const res = await nsClient.post("api/statistics/collection", {
-								postId,
-								action: isChecked ? "remove" : "add",
-							});
+			<Interactions postId={postId} data={data} />
+		</View>
+	);
+};
 
-							const SuccessSchema = v.object({
-								success: v.literal(true),
-								postCollectionCount: v.number(),
-							});
+const Interactions = ({
+	data,
+	postId,
+}: {
+	postId: number;
+	data: PostPageData;
+}) => {
+	const [isFavoritedLoading, setIsFavoritedLoading] = useState(false);
+	const [isUpvotedLoading, setIsUpvotedLoading] = useState(false);
+	const [isAppreciatedLoading, setIsAppreciatedLoading] = useState(false);
+	const webServiceContext = useContext(WebServiceContext);
+	const userId = useStore(userStore, (s) => s.id);
+	const postOriginalQueryKey = usePostOriginalQueryKey({
+		postId,
+	});
+	const updatePostOriginalQuery = (
+		updater: (draftState: NonNullable<PostOriginalData>) => void,
+	) => {
+		queryClient.setQueryData<PostOriginalData>(postOriginalQueryKey, (prev) => {
+			if (!prev) {
+				return prev;
+			}
 
-							const result = v.safeParse(SuccessSchema, res.data);
-							if (result.success) {
-								queryClient.setQueryData<
-									ReturnType<typeof usePostOriginalQuery>["data"]
-								>(postOriginalQueryKey, (prev) => {
-									if (!prev) {
-										return prev;
+			return produce(prev, updater);
+		});
+	};
+	const runInteraction = async ({
+		setLoading,
+		script,
+		onSuccess,
+	}: {
+		setLoading: (value: boolean) => void;
+		script: string;
+		onSuccess: () => void;
+	}) => {
+		if (userId == null) {
+			return;
+		}
+
+		setLoading(true);
+		try {
+			const promise = webServiceContext.run(script);
+
+			if (!promise) {
+				return;
+			}
+
+			await promise;
+			onSuccess();
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<View className="px-2 gap-2 flex-row">
+			{[
+				{
+					icon: data.interactions.isUpvoted
+						? ("thumb-up" as const)
+						: ("thumb-up-outline" as const),
+					label: data.interactions.upvoteCount,
+					onPress: async () => {
+						const commentId = data.commentId;
+
+						if (
+							userId == null ||
+							commentId == null ||
+							data.interactions.isUpvoted
+						) {
+							return;
+						}
+
+						await runInteraction({
+							setLoading: setIsUpvotedLoading,
+							script: createUpvoteScript({ commentId, action: "add" }),
+							onSuccess: () => {
+								updatePostOriginalQuery((draftState) => {
+									if (draftState.interactions.isUpvoted) {
+										return;
 									}
-									return produce(prev, (draftState) => {
-										draftState.interactions.isFavorited = !isChecked;
-										draftState.interactions.favoriteCount =
-											result.output.postCollectionCount;
-									});
+
+									draftState.interactions.isUpvoted = true;
+									draftState.interactions.upvoteCount += 1;
 								});
-							}
-						},
+							},
+						});
 					},
-				].map((x) => {
-					return (
-						<Pressable
-							key={x.icon}
-							className="flex-1 py-2 rounded-xl"
-							onPress={x.onPress}
-							disabled
-						>
-							<View className="gap-0.5 items-center">
-								<Text className="text-muted-foreground">{x.label}</Text>
-								<MaterialDesignIcons
-									name={x.icon}
-									size={20}
-									className="text-muted-foreground"
-								/>
-							</View>
-						</Pressable>
-					);
-				})}
-			</View>
+					disabled:
+						userId == null ||
+						isUpvotedLoading ||
+						data.interactions.isUpvoted ||
+						data.commentId == null,
+				},
+				// {
+				// 	icon: data.interactions.isDownvoted
+				// 		? ("thumb-down" as const)
+				// 		: ("thumb-down-outline" as const),
+				// 	label: data.interactions.downvoteCount,
+				// },
+				{
+					icon: data.interactions.isAppreciated
+						? ("food-drumstick" as const)
+						: ("food-drumstick-outline" as const),
+					label: data.interactions.appreciationCount,
+					onPress: async () => {
+						const commentId = data.commentId;
+
+						if (
+							userId == null ||
+							commentId == null ||
+							data.interactions.isAppreciated
+						) {
+							return;
+						}
+
+						await runInteraction({
+							setLoading: setIsAppreciatedLoading,
+							script: createAppreciatScript({ commentId, action: "add" }),
+							onSuccess: () => {
+								updatePostOriginalQuery((draftState) => {
+									if (draftState.interactions.isAppreciated) {
+										return;
+									}
+
+									draftState.interactions.isAppreciated = true;
+									draftState.interactions.appreciationCount += 1;
+								});
+							},
+						});
+					},
+					disabled:
+						userId == null ||
+						isAppreciatedLoading ||
+						data.interactions.isAppreciated ||
+						data.commentId == null,
+				},
+				{
+					icon: data.interactions.isFavorited
+						? ("heart" as const)
+						: ("heart-outline" as const),
+					label: data.interactions.favoriteCount,
+					onPress: async () => {
+						if (userId == null) {
+							return;
+						}
+
+						await runInteraction({
+							setLoading: setIsFavoritedLoading,
+							script: createCollectionScript({
+								postId,
+								action: data.interactions.isFavorited ? "remove" : "add",
+							}),
+							onSuccess: () => {
+								updatePostOriginalQuery((draftState) => {
+									draftState.interactions.isFavorited =
+										!draftState.interactions.isFavorited;
+									draftState.interactions.favoriteCount = Math.max(
+										0,
+										draftState.interactions.favoriteCount +
+											(draftState.interactions.isFavorited ? 1 : -1),
+									);
+								});
+							},
+						});
+					},
+					disabled: userId == null || isFavoritedLoading,
+				},
+			].map((x) => {
+				return (
+					<Pressable
+						key={x.icon}
+						className="flex-1 py-2 rounded-xl"
+						onPress={x.onPress}
+						disabled={x.disabled}
+					>
+						<View className="gap-0.5 items-center">
+							<Text className="text-muted-foreground">{x.label}</Text>
+							<MaterialDesignIcons
+								name={x.icon}
+								size={20}
+								className="text-muted-foreground"
+							/>
+						</View>
+					</Pressable>
+				);
+			})}
 		</View>
 	);
 };

@@ -106,3 +106,49 @@ const res = await fetch(
 return await res.json();
 `;
 };
+
+export const createUpvoteScript = (payload: {
+	commentId: number;
+	action: "add";
+}) => {
+	const url = new URL("api/statistics/upvote", config.apiBaseUrl).toString();
+
+	return `
+const data = ${JSON.stringify(payload)};
+const res = await fetch(
+	${JSON.stringify(url)},
+	{
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	},
+);
+
+return await res.json();
+`;
+};
+
+export const createAppreciatScript = (payload: {
+	commentId: number;
+	action: "add";
+}) => {
+	const url = new URL("api/statistics/like", config.apiBaseUrl).toString();
+
+	return `
+const data = ${JSON.stringify(payload)};
+const res = await fetch(
+	${JSON.stringify(url)},
+	{
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	},
+);
+
+return await res.json();
+`;
+};

@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
-import { useContext, useMemo, useRef } from "react";
+import { type Ref, useContext, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ToastAndroid, View } from "react-native";
 import { useStore } from "zustand";
@@ -33,14 +33,100 @@ return await res.json()
 `;
 };
 
+export const AvatarMenu = ({
+	uid,
+	ref,
+}: {
+	uid?: number;
+	ref?: Ref<TrueSheetMenu>;
+}) => {
+	const user = useRashUserQuery(uid || 0, Boolean(uid));
+	const { t } = useTranslation();
+	const webServiceContext = useContext(WebServiceContext);
+	const isBlockingRef = useRef(false);
+	const userId = useStore(userStore, (s) => s.id);
+
+	return (
+		<TrueSheetMenu
+			ref={ref}
+			menus={[
+				userId && userId !== uid
+					? {
+							key: "ban",
+							icon: "cancel" as const,
+							label: t("avatar.menu.blockUser"),
+							onPress: async () => {
+								if (user.data?.name && !isBlockingRef.current) {
+									isBlockingRef.current = true;
+									webServiceContext
+										.run(
+											createBanScript({
+												block_member_name: user.data.name,
+											}),
+										)
+										?.then((res) => {
+											if (res?.success) {
+												ToastAndroid.show(
+													t("avatar.block.success"),
+													ToastAndroid.SHORT,
+												);
+											} else {
+												ToastAndroid.show(
+													t("avatar.block.failed"),
+													ToastAndroid.SHORT,
+												);
+											}
+										})
+										.catch((_) => {
+											ToastAndroid.show(
+												t("avatar.block.failed"),
+												ToastAndroid.SHORT,
+											);
+										})
+										.finally(() => {
+											isBlockingRef.current = false;
+										});
+								} else {
+									ToastAndroid.show(
+										t("avatar.block.failed"),
+										ToastAndroid.SHORT,
+									);
+								}
+							},
+						}
+					: null,
+				{
+					key: "open",
+					icon: "open-in-new" as const,
+					label: t("post.menu.openInBrowser"),
+					onPress: async () => {
+						if (!uid) {
+							return;
+						}
+
+						const url = new URL(`space/${uid}`, config.siteUrl);
+						Linking.openURL(url.toString());
+					},
+				},
+			].filter((x) => x !== null)}
+		>
+			{uid ? <UserItem uid={uid} /> : null}
+		</TrueSheetMenu>
+	);
+};
+
 export const Avatar = ({
 	uid,
 	size = 32,
 	showRank = false,
+	enableMenu = true,
+	onPress,
 }: {
 	uid?: number;
 	size?: number;
 	showRank?: boolean;
+	enableMenu?: boolean;
+	onPress?: () => void;
 }) => {
 	const avatarHref = useMemo(() => {
 		return uid
@@ -49,10 +135,6 @@ export const Avatar = ({
 	}, [uid]);
 	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
 	const user = useRashUserQuery(uid || 0, Boolean(uid && showRank));
-	const { t } = useTranslation();
-	const webServiceContext = useContext(WebServiceContext);
-	const isBlockingRef = useRef(false);
-	const userId = useStore(userStore, (s) => s.id);
 
 	if (!avatarHref) {
 		return null;
@@ -70,7 +152,11 @@ export const Avatar = ({
 					position: "relative",
 				}}
 				onPress={() => {
-					trueSheetMenuRef.current?.present();
+					onPress?.();
+
+					if (enableMenu && !onPress) {
+						trueSheetMenuRef.current?.present();
+					}
 				}}
 			>
 				<Image
@@ -103,69 +189,7 @@ export const Avatar = ({
 					</View>
 				)}
 			</Pressable>
-			<TrueSheetMenu
-				ref={trueSheetMenuRef}
-				menus={[
-					userId && userId !== uid
-						? {
-								key: "ban",
-								icon: "cancel" as const,
-								label: t("avatar.menu.blockUser"),
-								onPress: async () => {
-									if (user.data?.name && !isBlockingRef.current) {
-										isBlockingRef.current = true;
-										webServiceContext
-											.run(
-												createBanScript({
-													block_member_name: user.data.name,
-												}),
-											)
-											?.then((res) => {
-												if (res?.success) {
-													ToastAndroid.show(
-														t("avatar.block.success"),
-														ToastAndroid.SHORT,
-													);
-												} else {
-													ToastAndroid.show(
-														t("avatar.block.failed"),
-														ToastAndroid.SHORT,
-													);
-												}
-											})
-											.catch((_) => {
-												ToastAndroid.show(
-													t("avatar.block.failed"),
-													ToastAndroid.SHORT,
-												);
-											})
-											.finally(() => {
-												isBlockingRef.current = false;
-											});
-									} else {
-										ToastAndroid.show(
-											t("avatar.block.failed"),
-											ToastAndroid.SHORT,
-										);
-									}
-
-									trueSheetMenuRef.current?.dismiss();
-								},
-							}
-						: null,
-					{
-						key: "open",
-						icon: "open-in-new" as const,
-						label: t("post.menu.openInBrowser"),
-						onPress: async () => {
-							const url = new URL(`space/${uid}`, config.siteUrl);
-							Linking.openURL(url.toString());
-						},
-					},
-				].filter((x) => x !== null)}
-			>
-				{uid ? <UserItem uid={uid} /> : null}
-			</TrueSheetMenu>
+			{enableMenu && <AvatarMenu ref={trueSheetMenuRef} uid={uid} />}
 		</>
 	);
 };

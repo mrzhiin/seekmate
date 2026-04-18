@@ -22,7 +22,7 @@ import { useRefresh } from "@/hooks/useRefresh";
 import { config } from "@/lib/config";
 import type { Post } from "@/lib/parser";
 import { ScreenName } from "@/stack/screenName";
-import { Avatar } from "../avatar";
+import { Avatar, AvatarMenu } from "../avatar";
 import { ErrorFallback } from "../errorFallback";
 import { Spinner } from "../spinner";
 import { TrueSheetMenu } from "../trueSheet";
@@ -49,10 +49,12 @@ const PostItem = observer(
 		item$,
 		onPress,
 		onLongPress,
+		onAvatarPress,
 	}: {
 		item$: ReturnType<typeof observable<Post>>;
 		onPress?: () => void;
 		onLongPress?: () => void;
+		onAvatarPress?: () => void;
 	}) => {
 		return (
 			<Pressable
@@ -62,7 +64,15 @@ const PostItem = observer(
 			>
 				<Computed>
 					{() => {
-						return <Avatar size={40} uid={item$.author.uid.get()} showRank />;
+						return (
+							<Avatar
+								size={40}
+								uid={item$.author.uid.get()}
+								showRank
+								enableMenu={false}
+								onPress={onAvatarPress}
+							/>
+						);
 					}}
 				</Computed>
 				<View className="gap-2 flex-1">
@@ -196,8 +206,12 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 	const listRef = useRef<LegendListRef | null>(null);
 	const postsById$ = useObservable<Record<number, Post>>({});
 	const [currentPostId, setCurrentPostId] = useState<number | null>(null);
+	const [currentAvatarUid, setCurrentAvatarUid] = useState<
+		number | undefined
+	>();
 	const navigation = useNavigation();
 	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
+	const avatarMenuRef = useRef<TrueSheetMenu>(null);
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 
@@ -269,6 +283,14 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 						onLongPress={() => {
 							setCurrentPostId(item.id);
 							trueSheetMenuRef.current?.present();
+						}}
+						onAvatarPress={() => {
+							const uid = item$.author.uid.peek();
+
+							if (uid) {
+								setCurrentAvatarUid(uid);
+								avatarMenuRef.current?.present();
+							}
 						}}
 					/>
 				);
@@ -367,6 +389,7 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 					}}
 				</Memo>
 			</TrueSheetMenu>
+			<AvatarMenu ref={avatarMenuRef} uid={currentAvatarUid} />
 		</>
 	);
 };

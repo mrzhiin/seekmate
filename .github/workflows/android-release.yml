@@ -1,0 +1,171 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag to create or update
+        required: true
+        type: string
+      release_name:
+        description: Release title
+        required: false
+        type: string
+
+concurrency:
+  group: android-release-${{ github.ref_name || inputs.tag_name || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build APK/AAB
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      EXPO_NO_DOTENV: "1"
+      EXPO_NO_CLIENT_ENV_VARS: "1"
+      APP_PUBLIC_SENTRY_DSN: ${{ vars.APP_PUBLIC_SENTRY_DSN }}
+      APP_PUBLIC_API_BASEURL: ${{ vars.APP_PUBLIC_API_BASEURL }}
+      APP_PUBLIC_SITE_URL: ${{ vars.APP_PUBLIC_SITE_URL }}
+      APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
+      APP_RELEASE_STORE_FILE: "release.keystore"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore Android keystore
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' '${{ secrets.APP_RELEASE_STORE_BASE64 }}' | base64 --decode > ${{ env.APP_RELEASE_STORE_FILE }}
+
+      - name: Build Android AAB
+        run: pnpm build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+
+      - name: Build Android APK
+        run: pnpm build:apk
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+
+      - name: Rename APK files
+        shell: bash
+        run: pnpm exec tsx scripts/rename-apk.ts
+
+      - name: Remove Android keystore
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f "${{ env.APP_RELEASE_STORE_FILE }}"
+
+      - name: Collect APK files
+        id: apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t apks < <(find android/app/build/outputs/apk/release -type f -name '*.apk' | sort)
+          if [ ${#apks[@]} -eq 0 ]; then
+            echo 'No APK files found.'
+            exit 1
+          fi
+          printf 'Built APKs:\n%s\n' "${apks[*]}"
+
+      - name: Collect AAB files
+        id: aab
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t aabs < <(find android/app/build/outputs/bundle/release -type f -name '*.aab' | sort)
+          if [ ${#aabs[@]} -eq 0 ]; then
+            echo 'No AAB files found.'
+            exit 1
+          fi
+          printf 'Built AABs:\n%s\n' "${aabs[*]}"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+  release:
+    name: Publish release assets
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build
+
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: android-release-apk
+          path: release-assets/apk
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: android-release-aab
+          path: release-assets/aab
+
+      - name: Publish GitHub release assets
+        uses: softprops/action-gh-release@v3
+        if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.ref_name || inputs.tag_name }}
+          name: ${{ inputs.release_name || github.ref_name || inputs.tag_name }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            release-assets/apk/**/*.apk
+            release-assets/aab/**/*.aab
+          generate_release_notes: true
+          fail_on_unmatched_files: true

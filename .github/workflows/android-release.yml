@@ -40,18 +40,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name ||
+            github.ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: pnpm
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

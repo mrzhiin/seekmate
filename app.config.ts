@@ -3,7 +3,8 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
-const AndroidVersionCode = 3;
+const VersionCode = 3;
+const abis = ["armeabi-v7a", "arm64-v8a", "x86_64"];
 
 const config = ({ config }: ConfigContext): ExpoConfig => {
 	const extra = v.parse(ExpoExtraSchema, {
@@ -18,9 +19,12 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 		[
 			"expo-build-properties",
 			{
-				android: {},
+				android: {
+					buildArchs: abis,
+				},
 			},
 		],
+		["./plugins/withAndroidAbiSplits.ts", { abis, universalApk: true }],
 		["expo-image"],
 		[
 			"expo-splash-screen",
@@ -84,7 +88,7 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 		icon: "./assets/app/adaptive-icon.png",
 		android: {
 			package: "com.angiin.seekmate",
-			versionCode: AndroidVersionCode,
+			versionCode: VersionCode,
 		},
 		plugins,
 		extra,

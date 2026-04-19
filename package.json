@@ -8,7 +8,8 @@
 		"start": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- expo start",
 		"prebuild": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- expo prebuild",
 		"build": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --mode=release",
-		"build:apk": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --tasks assemble"
+		"build:apk": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --tasks assembleRelease",
+		"build:apk:debug": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --tasks assembleDebug"
 	},
 	"dependencies": {
 		"@expo/config-plugins": "^55.0.8",

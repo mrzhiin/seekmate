@@ -20,13 +20,15 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
     name: Build APK/AAB
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
     env:
       EXPO_NO_DOTENV: "1"
       EXPO_NO_CLIENT_ENV_VARS: "1"
@@ -34,7 +36,7 @@ jobs:
       APP_PUBLIC_API_BASEURL: ${{ vars.APP_PUBLIC_API_BASEURL }}
       APP_PUBLIC_SITE_URL: ${{ vars.APP_PUBLIC_SITE_URL }}
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
-      APP_RELEASE_STORE_FILE: "release.keystore"
+      APP_RELEASE_STORE_FILE: ${{ runner.temp }}/release.keystore
 
     steps:
       - name: Checkout repository
@@ -42,6 +44,14 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name ||
             github.ref }}
+          persist-credentials: false
+
+      - name: Clean workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard HEAD
+          git clean -ffdx
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -61,14 +71,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          umask 077
           printf '%s' '${{ secrets.APP_RELEASE_STORE_BASE64 }}' | base64 --decode > ${{ env.APP_RELEASE_STORE_FILE }}
 
       - name: Prebuild Android project
         run: pnpm prebuild
         env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
@@ -93,9 +101,6 @@ jobs:
       - name: Build Android APK
         run: pnpm build:apk
         env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
@@ -149,11 +154,20 @@ jobs:
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
+      - name: Clean build workspace
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf android/app/build android/.gradle android/build release-assets
+
   release:
     name: Publish release assets
     runs-on: ubuntu-latest
     environment: production
     needs: build
+    permissions:
+      contents: write
 
     steps:
       - name: Download APK artifact
@@ -177,6 +191,12 @@ jobs:
           target_commitish: ${{ github.sha }}
           files: |
             release-assets/apk/**/*.apk
-            release-assets/aab/**/*.aab
           generate_release_notes: true
           fail_on_unmatched_files: true
+
+      - name: Clean release workspace
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf release-assets

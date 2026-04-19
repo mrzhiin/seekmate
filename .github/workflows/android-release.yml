@@ -36,7 +36,7 @@ jobs:
       APP_PUBLIC_API_BASEURL: ${{ vars.APP_PUBLIC_API_BASEURL }}
       APP_PUBLIC_SITE_URL: ${{ vars.APP_PUBLIC_SITE_URL }}
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
-      APP_RELEASE_STORE_FILE: ${{ runner.temp }}/release.keystore
+      APP_RELEASE_STORE_FILE: "release.keystore"
 
     steps:
       - name: Checkout repository

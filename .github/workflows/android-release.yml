@@ -16,7 +16,7 @@ on:
         type: string
 
 concurrency:
-  group: android-release-${{ github.ref_name || inputs.tag_name || github.ref }}
+  group: android-release-${{ inputs.tag_name || github.ref_name || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -32,26 +32,20 @@ jobs:
     env:
       EXPO_NO_DOTENV: "1"
       EXPO_NO_CLIENT_ENV_VARS: "1"
+      #
       APP_PUBLIC_SENTRY_DSN: ${{ vars.APP_PUBLIC_SENTRY_DSN }}
       APP_PUBLIC_API_BASEURL: ${{ vars.APP_PUBLIC_API_BASEURL }}
       APP_PUBLIC_SITE_URL: ${{ vars.APP_PUBLIC_SITE_URL }}
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
+      #
       APP_RELEASE_STORE_FILE: "release.keystore"
+      #
+      HAS_ANDROID_KEYSTORE: ${{ secrets.APP_RELEASE_STORE_BASE64 != '' }}
+      HAS_GOOGLE_SERVICES: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name ||
-            github.ref }}
-          persist-credentials: false
-
-      - name: Clean workspace
-        shell: bash
-        run: |
-          set -euo pipefail
-          git reset --hard HEAD
-          git clean -ffdx
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -68,14 +62,23 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Restore Android keystore
+        if: ${{ env.HAS_ANDROID_KEYSTORE == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           umask 077
           printf '%s' '${{ secrets.APP_RELEASE_STORE_BASE64 }}' | base64 --decode > ${{ env.APP_RELEASE_STORE_FILE }}
 
+      - name: Restore GoogleServices
+        if: ${{ env.HAS_GOOGLE_SERVICES == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' '${{ secrets.APP_GOOGLE_SERVICES_BASE64 }}' | base64 --decode > ${{ env.APP_GOOGLE_SERVICES_FILE }}
+
       - name: Prebuild Android project
-        run: pnpm prebuild
+        run: pnpm run prebuild
         env:
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
@@ -89,7 +92,7 @@ jobs:
           cache: gradle
 
       - name: Build Android AAB
-        run: pnpm build
+        run: pnpm run build
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
@@ -99,46 +102,14 @@ jobs:
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
 
       - name: Build Android APK
-        run: pnpm build:apk
+        run: pnpm run build:apk
         env:
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
 
       - name: Rename APK files
-        shell: bash
         run: pnpm exec tsx scripts/rename-apk.ts
-
-      - name: Remove Android keystore
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -f "${{ env.APP_RELEASE_STORE_FILE }}"
-
-      - name: Collect APK files
-        id: apk
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t apks < <(find android/app/build/outputs/apk/release -type f -name '*.apk' | sort)
-          if [ ${#apks[@]} -eq 0 ]; then
-            echo 'No APK files found.'
-            exit 1
-          fi
-          printf 'Built APKs:\n%s\n' "${apks[*]}"
-
-      - name: Collect AAB files
-        id: aab
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t aabs < <(find android/app/build/outputs/bundle/release -type f -name '*.aab' | sort)
-          if [ ${#aabs[@]} -eq 0 ]; then
-            echo 'No AAB files found.'
-            exit 1
-          fi
-          printf 'Built AABs:\n%s\n' "${aabs[*]}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
@@ -153,13 +124,6 @@ jobs:
           name: android-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
-
-      - name: Clean build workspace
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf android/app/build android/.gradle android/build release-assets
 
   release:
     name: Publish release assets
@@ -186,17 +150,9 @@ jobs:
         uses: softprops/action-gh-release@v3
         if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name || inputs.tag_name }}
-          name: ${{ inputs.release_name || github.ref_name || inputs.tag_name }}
-          target_commitish: ${{ github.sha }}
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          name: ${{ inputs.release_name || inputs.tag_name || github.ref_name }}
           files: |
             release-assets/apk/**/*.apk
           generate_release_notes: true
           fail_on_unmatched_files: true
-
-      - name: Clean release workspace
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf release-assets

@@ -8,9 +8,7 @@ export const useRecordAttendanceMutation = () => {
 	const mutation = useMutation({
 		mutationKey: ["api/attendance", userId],
 		mutationFn: async (params?: { isRandom?: boolean }) => {
-			const random = params?.isRandom
-				? Math.random().toString(36).substring(2, 15)
-				: false;
+			const random = !!params?.isRandom;
 
 			await nsClient.post(`api/attendance?random=${random}`);
 		},

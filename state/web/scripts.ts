@@ -5,10 +5,7 @@ import {
 } from "@/store/appStore";
 
 export const createAttendanceScript = (checkInType: CheckInTypeValue) => {
-	const randomValue =
-		checkInType === CheckInType.Random
-			? "Math.random().toString(36).substring(2, 15)"
-			: "false";
+	const randomValue = checkInType === CheckInType.Random ? "true" : "false";
 
 	const url = new URL(
 		`api/attendance?random=${randomValue}`,

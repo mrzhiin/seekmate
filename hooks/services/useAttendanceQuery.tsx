@@ -18,7 +18,7 @@ const SuccessResSchema = v.object({
 
 export const getAttendanceQueryOptions = (userId: number) => {
 	return {
-		queryKey: ["api/attendance", userId] as const,
+		queryKey: ["api/attendance/board?page=1", userId] as const,
 		queryFn: async () => {
 			const res = await nsClient.get("api/attendance/board?page=1");
 			const resData = res.data;
@@ -47,7 +47,7 @@ export const useAttendanceQuery = () => {
 		...(userId
 			? getAttendanceQueryOptions(userId)
 			: {
-					queryKey: ["api/attendance", userId] as const,
+					queryKey: ["api/attendance/board?page=1", userId] as const,
 					queryFn: async () => null,
 				}),
 		enabled: Boolean(userId),

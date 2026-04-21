@@ -104,6 +104,9 @@ jobs:
       - name: Build Android APK
         run: pnpm run build:apk
         env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}

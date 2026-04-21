@@ -60,7 +60,10 @@ const Screen = () => {
 	}, [navigation, t]);
 
 	return (
-		<ScrollView>
+		<ScrollView
+			showsHorizontalScrollIndicator={false}
+			showsVerticalScrollIndicator={false}
+		>
 			<View>
 				<User />
 				<AuthCheckIn />

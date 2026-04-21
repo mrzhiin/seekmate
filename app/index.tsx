@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Sentry } from "@/lib/sentry";
 import { RootStack } from "@/stack/rootStack";
+import { CategoriesProvider } from "@/state/categories";
 import { LocalizationProvider } from "@/state/localization";
 import { NavigationProvider } from "@/state/navigation";
 import { QueryProvider } from "@/state/query";
@@ -19,6 +20,7 @@ export const App = Sentry.wrap(() => {
 					<LocalizationProvider>
 						<ThemeProvider>
 							<QueryProvider>
+								<CategoriesProvider />
 								<WebServiceProvider>
 									{/* TODO: Bug? */}
 									<View

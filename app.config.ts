@@ -3,7 +3,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
-const VersionCode = 6;
+const VersionCode = 7;
 const abis = ["armeabi-v7a", "arm64-v8a", "x86_64"];
 
 const config = ({ config }: ConfigContext): ExpoConfig => {

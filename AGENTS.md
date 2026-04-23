@@ -7,7 +7,7 @@
 - Route registration and typing are centralized in `stack/screen.ts`, `stack/screenName.ts`, and `stack/screenParams.ts`.
 - `app/singin` is the real route folder, while `stack/screenName.ts` contains both `ScreenName.Singin` and `ScreenName.Signin`; do not “fix” the spelling unless you update every reference.
 - Use the `@/*` alias from `tsconfig.json` instead of long relative imports.
-- App startup is provider-heavy in `app/index.tsx`; `state/web/index.tsx` mounts `AutoCheckIn` and `WebRunner` as side effects, so web-service changes can affect boot behavior.
+- `app/index.tsx` is provider-heavy and imports `global.css` once at the root. `state/web/index.tsx` also mounts `AutoCheckIn` and `WebRunner` as side effects, so web-service changes can affect app startup.
 
 ## Commands
 - Package manager is `pnpm`; there is no workspace file.
@@ -21,7 +21,7 @@
   - `pnpm exec biome check .`
   - `pnpm exec tsc --noEmit`
 - Android build flow is `pnpm prebuild` first, then `pnpm build` or `pnpm build:apk`.
-- Current baseline: `pnpm exec biome check .` passes, while `pnpm exec tsc --noEmit` fails in `stack/rootStack.tsx` because of the navigator screen map typing; do not assume that pre-existing error came from your change.
+- Current baseline: `pnpm exec biome check .` passes, while `pnpm exec tsc --noEmit` currently fails in `stack/rootStack.tsx` on the `Screens.map(...)` navigator typing; do not assume that pre-existing error came from your change.
 
 ## Env and build gotchas
 - All app scripts load env through `dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- ...`; Expo default env loading is intentionally disabled.
@@ -29,9 +29,10 @@
 - If you add or rename an env, update all three: `app.config.ts`, `types/expoExtra.ts`, and `lib/config/index.ts`.
 - Release signing is injected by `plugins/withSignedPlugin.ts` only when all `APP_RELEASE_*` vars are set.
 - The Sentry Expo plugin is enabled only when `SENTRY_AUTH_TOKEN`, `SENTRY_PROJECT`, and `SENTRY_ORGANIZATION` are present.
-- CI release builds (`.github/workflows/android-release.yml`) use pnpm 10 + Node 24, then run `pnpm install --frozen-lockfile` → `pnpm run prebuild` → `pnpm run build` → `pnpm run build:apk`.
+- CI release builds (`.github/workflows/android-release.yml`) use pnpm 10 + Node 24, then run `pnpm install --frozen-lockfile` → `pnpm run prebuild` → `pnpm run build` → `pnpm run build:apk`. The workflow uploads both APK and AAB artifacts, but only APKs are attached to the GitHub Release.
 
 ## Native and tooling
 - `pnpm prebuild` mutates native projects. `android/` and `ios/` are gitignored here, so treat native output as generated unless the user explicitly wants native files inspected or regenerated.
 - Styling is Tailwind v4 + Uniwind. `app/index.tsx` imports `global.css` once at the root; `metro.config.cjs` generates `types/uniwind-types.d.ts`, and `biome.json` excludes that file.
 - Babel only adds `react-native-worklets/plugin`; keep that in mind before changing animation/worklets setup.
+- If you are working on release packaging, CI runs `pnpm exec tsx scripts/rename-apk.ts` after `build:apk`, and it expects `android/app/build/outputs/apk/release/output-metadata.json` to exist.

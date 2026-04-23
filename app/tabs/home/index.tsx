@@ -82,13 +82,13 @@ const Screen = () => {
 				}}
 				screenOptions={{
 					tabBarItemStyle: {
-						width: 128,
+						width: pinnedCategories.length ? 128 : undefined,
 					},
 					tabBarLabelStyle: {
 						fontSize: 16,
 					},
 					lazy: true,
-					tabBarScrollEnabled: true,
+					tabBarScrollEnabled: !!pinnedCategories.length,
 				}}
 			>
 				<Tab.Screen

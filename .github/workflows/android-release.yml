@@ -23,6 +23,24 @@ permissions:
   contents: read
 
 jobs:
+  resolve-release:
+    name: Resolve release tag metadata
+    runs-on: ubuntu-latest
+    outputs:
+      is_semver_prerelease: ${{ steps.resolve.outputs.is_semver_prerelease }}
+    steps:
+      - name: Resolve release tag metadata
+        id: resolve
+        env:
+          RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const releaseTag = process.env.RELEASE_TAG
+            const isSemverPrerelease = !/^.*v\d+\.\d+\.\d+$/.test(releaseTag)
+
+            core.setOutput('is_semver_prerelease', String(isSemverPrerelease))
+
   build:
     name: Build APK/AAB
     runs-on: ubuntu-latest
@@ -132,9 +150,13 @@ jobs:
     name: Publish release assets
     runs-on: ubuntu-latest
     environment: production
-    needs: build
+    needs:
+      - build
+      - resolve-release
     permissions:
       contents: write
+    env:
+      IS_SEMVER_PRERELEASE: ${{ needs.resolve-release.outputs.is_semver_prerelease }}
 
     steps:
       - name: Download APK artifact
@@ -155,6 +177,7 @@ jobs:
         with:
           tag_name: ${{ inputs.tag_name || github.ref_name }}
           name: ${{ inputs.release_name || inputs.tag_name || github.ref_name }}
+          prerelease: ${{ env.IS_SEMVER_PRERELEASE == 'true' }}
           files: |
             release-assets/apk/**/*.apk
           generate_release_notes: true

@@ -10,7 +10,7 @@ const queue = new PQueue({
 	interval: 1000,
 	carryoverIntervalCount: true,
 });
-const ONE_HOUR_MS = 1000 * 60 * 60;
+const ONE_HOUR_MS = 1000 * 60 * 60 * 12;
 
 const UserResSchema = v.object({
 	member_id: v.number(),

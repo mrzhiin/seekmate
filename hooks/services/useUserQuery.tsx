@@ -5,8 +5,8 @@ import * as v from "valibot";
 import { nsClient } from "@/lib/http/client";
 
 const queue = new PQueue({
-	concurrency: 1,
-	intervalCap: 1,
+	concurrency: 2,
+	intervalCap: 2,
 	interval: 1000,
 	carryoverIntervalCount: true,
 });

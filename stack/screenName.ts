@@ -11,5 +11,6 @@ export const ScreenName = {
 	Signin: "Signin",
 	Authenticate: "Authenticate",
 	Search: "Search",
+	CategoriesSort: "CategoriesSort",
 	User: "User",
 } as const;

@@ -1,4 +1,5 @@
 import AuthenticateScreen from "@/app/authenticate";
+import CategoriesSortScreen from "@/app/categoriesSort";
 import PostsScreen from "@/app/posts";
 import PostScreen from "@/app/posts/[id]";
 import SearchScreen from "@/app/search";
@@ -41,5 +42,9 @@ export const Screens = [
 	{
 		name: ScreenName.Search,
 		component: SearchScreen,
+	},
+	{
+		name: ScreenName.CategoriesSort,
+		component: CategoriesSortScreen,
 	},
 ];

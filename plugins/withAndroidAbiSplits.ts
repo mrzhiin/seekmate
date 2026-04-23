@@ -67,10 +67,27 @@ function findLineStart(src: string, index: number): number {
 	return previousNewline === -1 ? 0 : previousNewline + 1;
 }
 
-function findLineEnd(src: string, index: number): number {
-	const nextNewline = src.indexOf("\n", index);
+function consumeLeadingNewline(src: string, newline: "\n" | "\r\n"): string {
+	if (src.startsWith(newline)) {
+		return src.slice(newline.length);
+	}
 
-	return nextNewline === -1 ? src.length : nextNewline + 1;
+	return src;
+}
+
+function appendManagedBlock(
+	prefix: string,
+	managedBlock: string,
+	suffix: string,
+	newline: "\n" | "\r\n",
+): string {
+	if (suffix.length === 0) {
+		return `${prefix}${managedBlock}${newline}`;
+	}
+
+	const normalizedSuffix = consumeLeadingNewline(suffix, newline);
+
+	return `${prefix}${managedBlock}${newline}${normalizedSuffix}`;
 }
 
 function findBlockRange(
@@ -179,9 +196,14 @@ function upsertManagedBlock(
 		}
 
 		const replaceStart = findLineStart(src, managedStart);
-		const replaceEnd = findLineEnd(src, managedEnd + GENERATED_END.length);
+		const replaceEnd = managedEnd + GENERATED_END.length;
 
-		return `${src.slice(0, replaceStart)}${managedBlock}${src.slice(replaceEnd)}`;
+		return appendManagedBlock(
+			src.slice(0, replaceStart),
+			managedBlock,
+			src.slice(replaceEnd),
+			newline,
+		);
 	}
 
 	const androidContent = src.slice(androidBlock.start, androidBlock.end);
@@ -191,19 +213,21 @@ function upsertManagedBlock(
 		const unmanagedStart = androidBlock.start + unmanagedSplits.start;
 		const unmanagedEnd = androidBlock.start + unmanagedSplits.end;
 		const replaceStart = findLineStart(src, unmanagedStart);
-		const replaceEnd = findLineEnd(src, unmanagedEnd);
+		const replaceEnd = unmanagedEnd;
 
-		return `${src.slice(0, replaceStart)}${managedBlock}${src.slice(replaceEnd)}`;
+		return appendManagedBlock(
+			src.slice(0, replaceStart),
+			managedBlock,
+			src.slice(replaceEnd),
+			newline,
+		);
 	}
 
 	const openBraceIndex = src.indexOf("{", androidBlock.start);
 	const insertAt = openBraceIndex + 1;
-	const suffix = src.slice(insertAt);
-	const needsTrailingNewline =
-		!suffix.startsWith("\n") && !suffix.startsWith("\r\n");
-	const trailingNewline = needsTrailingNewline ? newline : "";
+	const suffix = consumeLeadingNewline(src.slice(insertAt), newline);
 
-	return `${src.slice(0, insertAt)}${newline}${managedBlock}${trailingNewline}${suffix}`;
+	return `${src.slice(0, insertAt)}${newline}${managedBlock}${newline}${suffix}`;
 }
 
 const withAndroidAbiSplits: ConfigPlugin<AndroidAbiSplitsOptions> = (

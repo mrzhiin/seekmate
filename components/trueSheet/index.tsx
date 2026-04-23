@@ -42,6 +42,7 @@ export const TrueSheetMenu = ({
 	children,
 	menus,
 	ref,
+	...rest
 }: TrueSheetProps & {
 	menus: {
 		key: string;
@@ -52,7 +53,7 @@ export const TrueSheetMenu = ({
 	}[];
 }) => {
 	return (
-		<TrueSheet ref={ref} scrollable={false} detents={["auto"]}>
+		<TrueSheet ref={ref} scrollable={false} detents={["auto"]} {...rest}>
 			<GestureHandlerRootView
 				style={{
 					flexGrow: 1,

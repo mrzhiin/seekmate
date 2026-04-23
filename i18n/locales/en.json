@@ -22,7 +22,10 @@
 		},
 		"categories": {
 			"title": "Categories",
-			"tab": "Categories"
+			"tab": "Categories",
+			"pin": "Pin",
+			"unpin": "Unpin",
+			"sort": "Reorder"
 		},
 		"mine": {
 			"title": "Hello!",
@@ -31,6 +34,9 @@
 	},
 	"search": {
 		"placeholder": "Search"
+	},
+	"categoriesSort": {
+		"title": "Category sorting"
 	},
 	"avatar": {
 		"menu": {

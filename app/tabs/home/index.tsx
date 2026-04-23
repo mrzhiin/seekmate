@@ -4,12 +4,13 @@ import {
 	type MaterialTopTabScreenProps,
 } from "@react-navigation/material-top-tabs";
 import { useNavigation } from "@react-navigation/native";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useStore } from "zustand";
 import { PostList } from "@/components/post/postList";
 import { Pressable } from "@/components/pressable";
+import { TrueSheetMenu } from "@/components/trueSheet";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { ScreenName } from "@/stack/screenName";
 import { CategoriesStore } from "@/store/categoriesStore";
@@ -38,6 +39,9 @@ const Screen = () => {
 	const navigation = useNavigation();
 	const { t } = useTranslation();
 	const pinnedCategories = useStore(CategoriesStore, (s) => s.pinnedCategories);
+	const unpinCategory = useStore(CategoriesStore, (s) => s.unpinCategory);
+	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
+	const [currentSlug, setCurrentSlug] = useState<string | null>(null);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -107,10 +111,42 @@ const Screen = () => {
 								category: x.slug,
 							}}
 							options={{ tabBarLabel: x.nameZh }}
+							listeners={{
+								tabLongPress: () => {
+									setCurrentSlug(x.slug);
+									trueSheetMenuRef.current?.present();
+								},
+							}}
 						/>
 					);
 				})}
 			</Tab.Navigator>
+			<TrueSheetMenu
+				ref={trueSheetMenuRef}
+				menus={[
+					{
+						key: "unpin",
+						label: t("tabs.categories.unpin"),
+						icon: "pin-off",
+						onPress: () => {
+							if (currentSlug) {
+								unpinCategory(currentSlug);
+							}
+
+							trueSheetMenuRef.current?.dismiss();
+						},
+					},
+					{
+						key: "sort",
+						label: t("tabs.categories.sort"),
+						icon: "format-list-bulleted",
+						onPress: () => {
+							navigation.navigate(ScreenName.CategoriesSort);
+							trueSheetMenuRef.current?.dismiss();
+						},
+					},
+				]}
+			/>
 		</RNScreensSafeAreaView>
 	);
 };

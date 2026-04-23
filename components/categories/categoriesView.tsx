@@ -1,5 +1,6 @@
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { useStore } from "zustand";
@@ -14,6 +15,7 @@ import { TrueSheetMenu } from "../trueSheet";
 
 export const CategoriesView = () => {
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 	const scrollViewRef = useRef<ScrollView>(null);
 	const { data, refetch } = useCategoriesSuspenseQuery();
 	const { isRefreshing, refresh } = useRefresh(refetch);
@@ -76,7 +78,9 @@ export const CategoriesView = () => {
 				menus={[
 					{
 						key: "pin",
-						label: isPinned ? "取消置顶" : "置顶",
+						label: isPinned
+							? t("tabs.categories.unpin")
+							: t("tabs.categories.pin"),
 						icon: isPinned ? "pin-off" : "pin-outline",
 						checked: isPinned,
 						onPress: () => {

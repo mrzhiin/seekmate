@@ -22,7 +22,10 @@
 		},
 		"categories": {
 			"title": "板块",
-			"tab": "版块"
+			"tab": "版块",
+			"pin": "置顶",
+			"unpin": "取消置顶",
+			"sort": "重新排序"
 		},
 		"mine": {
 			"title": "您好！",
@@ -31,6 +34,9 @@
 	},
 	"search": {
 		"placeholder": "搜索"
+	},
+	"categoriesSort": {
+		"title": "板块排序"
 	},
 	"avatar": {
 		"menu": {

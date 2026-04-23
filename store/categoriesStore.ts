@@ -27,6 +27,7 @@ type Action = {
 	unpinCategory: (slug: string) => void;
 	isPinnedCategory: (slug: string) => boolean;
 	getCategory: (slug: string) => Category | undefined;
+	sortPinnedCategory: (slug: string, sort: string) => void;
 	reset: () => void;
 };
 
@@ -148,6 +149,31 @@ export const CategoriesStore = createStore<State & Action>()(
 				},
 				getCategory: (slug) => {
 					return get().categories.find((category) => category.slug === slug);
+				},
+				sortPinnedCategory: (slug, sort) => {
+					const pinnedCategories = get().pinnedCategories;
+					const hasPinnedCategory = pinnedCategories.some(
+						(item) => item.slug === slug,
+					);
+
+					if (!hasPinnedCategory) {
+						return;
+					}
+
+					set({
+						pinnedCategories: normalizePinnedCategories(
+							pinnedCategories.map((item) => {
+								if (item.slug !== slug) {
+									return item;
+								}
+
+								return {
+									...item,
+									sort,
+								};
+							}),
+						),
+					});
 				},
 				reset: () => {
 					set(createInitialState());

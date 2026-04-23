@@ -13,9 +13,12 @@ import type {
 } from "lexical";
 import type { SerializedImageNode } from "./nodes/imageNode";
 
-export type ExtractFromPredicate<T> = T extends (node: any) => node is infer R
-	? R
-	: never;
+type NodePredicate<T extends SerializedLexicalNode = SerializedLexicalNode> = (
+	node: SerializedLexicalNode,
+) => node is T;
+
+export type ExtractFromPredicate<T> =
+	T extends NodePredicate<infer R> ? R : never;
 
 export const isRootNode = (
 	node: SerializedLexicalNode,

@@ -75,6 +75,7 @@
 		"react-native-nitro-web-image": "^0.13.1",
 		"react-native-pager-view": "^8.0.1",
 		"react-native-reanimated": "^4.3.0",
+		"react-native-reanimated-dnd": "^2.0.0",
 		"react-native-safe-area-context": "^5.7.0",
 		"react-native-screens": "^4.24.0",
 		"react-native-webview": "^13.16.1",

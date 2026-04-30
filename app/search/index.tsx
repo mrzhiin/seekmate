@@ -1,7 +1,8 @@
 import { useNavigation } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { type TextInput, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useMMKVObject } from "react-native-mmkv";
 import { PostListView } from "@/components/post/postList";
@@ -11,12 +12,14 @@ import { SearchBar } from "@/components/ui/searchBar";
 import { Text } from "@/components/ui/text";
 import { useSearchInfinitePostsQuery } from "@/hooks/services/useInfinitePostsQuery";
 import { StorageKey } from "@/lib/storage";
+import type { ScreenParams } from "@/stack/screenParams";
 
 const MaxKeywordSize = 10;
 
 const Screen = () => {
-	const navigation = useNavigation();
+	const navigation = useNavigation<NativeStackNavigationProp<ScreenParams>>();
 	const { t } = useTranslation();
+	const searchBarRef = useRef<TextInput>(null);
 	const [keyword, setKeyword] = useState("");
 	const [keywords, setKeywords] = useMMKVObject<string[]>(
 		StorageKey.SearchKeywords,
@@ -51,7 +54,7 @@ const Screen = () => {
 			headerTitle: () => {
 				return (
 					<SearchBar
-						autoFocus
+						ref={searchBarRef}
 						placeholder={t("search.placeholder")}
 						onSubmitEditing={(e) => {
 							handleSearch(e);
@@ -61,6 +64,16 @@ const Screen = () => {
 			},
 		});
 	}, [navigation, handleSearch, t]);
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener("transitionEnd", (e) => {
+			if (!e.data.closing) {
+				searchBarRef.current?.focus();
+			}
+		});
+
+		return unsubscribe;
+	}, [navigation]);
 
 	return (
 		<>
@@ -79,6 +92,7 @@ const Screen = () => {
 									className={`border border-border px-3 py-1 rounded-lg justify-center items-center mr-4 ${index === 0 ? "ml-4" : ""}`}
 									onPress={() => {
 										handleSearch(x);
+										searchBarRef.current?.setNativeProps({ text: x });
 									}}
 									onLongPress={() => {
 										setKeywords((p) => {
@@ -92,7 +106,6 @@ const Screen = () => {
 								</Pressable>
 							);
 						})}
-						{/* </View> */}
 					</ScrollView>
 				</View>
 			) : null}

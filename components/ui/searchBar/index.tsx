@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { type Ref, useRef } from "react";
 import {
 	type InputModeOptions,
 	TextInput,
@@ -18,6 +18,7 @@ export const SearchBar = (props: {
 	onChange?: (e: TextInputChangeEvent) => void;
 	onChangeText?: (e: string) => void;
 	inputMode?: InputModeOptions;
+	ref?: Ref<TextInput>;
 }) => {
 	const textInputRef = useRef<TextInput>(null);
 	const placeholderColo = useCSSVariableString("--color-muted-foreground");
@@ -32,6 +33,7 @@ export const SearchBar = (props: {
 			className="bg-secondary rounded-3xl items-center gap-2 px-4 flex-row overflow-hidden"
 		>
 			<TextInput
+				ref={props.ref}
 				autoFocus={props.autoFocus}
 				value={props.value}
 				placeholder={props.placeholder}

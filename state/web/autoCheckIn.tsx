@@ -33,6 +33,9 @@ export const AutoCheckIn = () => {
 			.then((res) => {
 				if (res) {
 					if (res.success) {
+						queryClient.invalidateQueries({
+							queryKey: getAttendanceQueryOptions(userId).queryKey,
+						});
 						ToastAndroid.show(t("mine.attendance.success"), ToastAndroid.SHORT);
 					} else {
 						ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);

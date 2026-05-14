@@ -66,14 +66,14 @@ const Screen = () => {
 	}, [navigation, handleSearch, t]);
 
 	useEffect(() => {
-		const unsubscribe = navigation.addListener("transitionEnd", (e) => {
-			if (!e.data.closing) {
+		const unsubscribe = navigation.addListener("transitionStart", (e) => {
+			if (!e.data.closing && !keyword) {
 				searchBarRef.current?.focus();
 			}
 		});
 
 		return unsubscribe;
-	}, [navigation]);
+	}, [navigation, keyword]);
 
 	return (
 		<>

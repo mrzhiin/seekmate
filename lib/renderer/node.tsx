@@ -1,5 +1,3 @@
-import { File } from "expo-file-system";
-import { startActivityAsync } from "expo-intent-launcher";
 import * as Linking from "expo-linking";
 import {
 	type SerializedLexicalNode,
@@ -7,16 +5,13 @@ import {
 	type TextFormatType,
 	TextNode,
 } from "lexical";
-import { memo, useCallback, useContext, useMemo, useRef } from "react";
+import { memo, useCallback, useContext, useMemo } from "react";
 import { Text as RNText, View } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
-import { NitroImage, useImage } from "react-native-nitro-image";
 import * as v from "valibot";
-import { ErrorFallback } from "@/components/errorFallback";
-import { Spinner } from "@/components/spinner";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { config } from "../config";
 import { NodeContext } from "./context";
+import { ImageRenderer } from "./nodes/imageRenderer";
 import {
 	type ExtractFromPredicate,
 	isCodeNode,
@@ -366,67 +361,6 @@ const QuoteRenderer = memo(
 				</View>
 			</NodeContext.Provider>
 		);
-	},
-);
-
-const ImageRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isImageNode> }) => {
-		const isSavingRef = useRef(false);
-		const src = useMemo(() => {
-			const result = v.safeParse(
-				v.pipe(v.string(), v.nonEmpty(), v.url()),
-				node.src,
-			);
-			if (result.success) {
-				return node.src;
-			}
-			return new URL(node.src, config.siteUrl).toString();
-		}, [node.src]);
-
-		const { image, error } = useImage({
-			url: src,
-		});
-
-		if (error) {
-			return <ErrorFallback />;
-		}
-
-		if (image) {
-			const aspect = (image?.width ?? 1) / (image?.height ?? 1);
-			return (
-				<Pressable
-					onLongPress={async () => {
-						try {
-							isSavingRef.current = true;
-
-							const path = await image.saveToTemporaryFileAsync("png");
-							const file = new File(`file://${path}`);
-
-							if (file.exists && file.contentUri) {
-								await startActivityAsync("android.intent.action.VIEW", {
-									data: file.contentUri,
-									flags: 1,
-									type: "image/png",
-								});
-							}
-						} finally {
-							isSavingRef.current = false;
-						}
-					}}
-				>
-					<NitroImage
-						image={image}
-						style={{
-							width: "100%",
-							maxWidth: image.width,
-							aspectRatio: aspect,
-						}}
-					/>
-				</Pressable>
-			);
-		}
-
-		return <Spinner />;
 	},
 );
 

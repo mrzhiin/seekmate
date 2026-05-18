@@ -104,9 +104,7 @@ export const Sort = ({ items, onChange }: Props) => {
 			onLayout={(event) => {
 				setContainerHeight(event.nativeEvent.layout.height);
 			}}
-			style={{
-				flex: 1,
-			}}
+			className="bg-background flex-1"
 		>
 			{containerHeight > 0 ? (
 				<Sortable

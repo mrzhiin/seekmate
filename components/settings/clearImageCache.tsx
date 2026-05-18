@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, ToastAndroid } from "react-native";
+import { Image as UIImage } from "@/components/ui/image";
 import { Item } from "./Item";
 
 export const ClearImageCache = () => {
@@ -17,6 +18,8 @@ export const ClearImageCache = () => {
 
 		try {
 			const [memoryResult, diskResult] = await Promise.allSettled([
+				UIImage.clearMemoryCache(),
+				UIImage.clearDiskCache(),
 				Image.clearMemoryCache(),
 				Image.clearDiskCache(),
 			]);

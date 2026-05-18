@@ -143,13 +143,11 @@ export const Avatar = ({
 	return (
 		<>
 			<Pressable
-				className="border-border border-2 bg-muted"
+				className="border-border border-2 bg-muted rounded-full relative"
 				style={{
 					width: size,
 					height: size,
-					borderRadius: size,
 					padding: 1,
-					position: "relative",
 				}}
 				onPress={() => {
 					onPress?.();

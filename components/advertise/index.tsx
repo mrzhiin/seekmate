@@ -1,6 +1,6 @@
-import { Image } from "expo-image";
 import * as Linking from "expo-linking";
 import { View } from "react-native";
+import { Image } from "@/components/ui/image";
 import { useAdvertiseQuery } from "@/hooks/services/useAdvertiseQuery";
 import { config } from "@/lib/config";
 import { Pressable } from "../pressable";
@@ -37,7 +37,7 @@ export const Advertise = () => {
 										referer: config.siteUrl,
 									},
 								}}
-								contentFit="cover"
+								resizeMode="cover"
 								className="flex-1"
 								style={{
 									height: "100%",

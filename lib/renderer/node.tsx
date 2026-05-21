@@ -12,6 +12,7 @@ import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { config } from "../config";
 import { NodeContext } from "./context";
 import { ImageRenderer } from "./nodes/imageRenderer";
+import { TabsRenderer } from "./nodes/tabsRenderer";
 import {
 	type ExtractFromPredicate,
 	isCodeNode,
@@ -24,6 +25,7 @@ import {
 	isParagraphNode,
 	isQuoteNode,
 	isRootNode,
+	isTabsNode,
 	isTextNode,
 } from "./types";
 
@@ -124,6 +126,9 @@ export const NodeRenderer = ({ node }: { node: SerializedLexicalNode }) => {
 	}
 	if (isCodeNode(node)) {
 		return <CodeRenderer node={node} />;
+	}
+	if (isTabsNode(node)) {
+		return <TabsRenderer node={node} />;
 	}
 	return null;
 };

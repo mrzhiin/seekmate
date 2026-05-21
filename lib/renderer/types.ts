@@ -13,6 +13,14 @@ import type {
 } from "lexical";
 import type { SerializedImageNode } from "./nodes/imageNode";
 
+export type SerializedTabsNode = SerializedLexicalNode & {
+	type: "tabs";
+	tabs: {
+		title: string;
+		children: SerializedLexicalNode[];
+	}[];
+};
+
 type NodePredicate<T extends SerializedLexicalNode = SerializedLexicalNode> = (
 	node: SerializedLexicalNode,
 ) => node is T;
@@ -74,3 +82,8 @@ export const isCodeNode = (
 	node: SerializedLexicalNode,
 ): node is SerializedCodeNode => node.type === "code";
 export type isCodeNode = typeof isCodeNode;
+
+export const isTabsNode = (
+	node: SerializedLexicalNode,
+): node is SerializedTabsNode => node.type === "tabs";
+export type isTabsNode = typeof isTabsNode;

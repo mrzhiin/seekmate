@@ -6,6 +6,7 @@ import { ErrorFallback } from "@/components/errorFallback";
 import { PostView } from "@/components/post/postView";
 import { Spinner } from "@/components/spinner";
 import { usePostOriginalQuery } from "@/hooks/services/usePostOriginalQuery";
+import { toViewedPostExcerpt, upsertViewedPost } from "@/lib/storage";
 import type { ScreenName } from "@/stack/screenName";
 import type { ScreenParams } from "@/stack/screenParams";
 
@@ -32,6 +33,18 @@ const Screen = (props: Props) => {
 			title: "",
 		});
 	}, [navigation]);
+
+	useEffect(() => {
+		if (!postData) {
+			return;
+		}
+
+		upsertViewedPost({
+			id: postData.id,
+			title: postData.title,
+			excerpt: toViewedPostExcerpt(postData.contentMarkdown),
+		});
+	}, [postData]);
 
 	if (isLoading) {
 		return (

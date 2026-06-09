@@ -8,6 +8,7 @@ export const StorageKey = {
 	ZustandStoreApp: "zustand:store:app",
 	ZustandStoreCategories: "zustand:store:categories",
 	SearchKeywords: "search:keywords",
+	RecentViewedPosts: "mine:recent-viewed-posts",
 } as const;
 
 const mmkvCacheStoragePathDirectory = new Directory(Paths.cache, "mmkv");

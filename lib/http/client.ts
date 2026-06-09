@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import Constants from "expo-constants";
 import * as v from "valibot";
-import { userStore } from "@/store/userStore";
+import { resetUserSessionFromAuthError } from "@/lib/auth/session";
 import { config } from "../config";
 
 export const nsClient = axios.create({
@@ -44,7 +44,7 @@ nsClient.interceptors.response.use(
 				v.safeParse(ErrorUser404Schema, data).success ||
 				v.safeParse(ErrorUser401Schema, data).success
 			) {
-				userStore.getState().reset();
+				resetUserSessionFromAuthError();
 			}
 		}
 

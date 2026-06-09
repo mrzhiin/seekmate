@@ -117,6 +117,13 @@
 			"signingIn": "签到中",
 			"loading": "加载中",
 			"notSignedIn": "未签到"
+		},
+		"recentViewedPosts": {
+			"title": "最近浏览",
+			"time": {
+				"yesterday": "昨天 {{time}}",
+				"daysAgo": "{{count}} 天前"
+			}
 		}
 	},
 	"errorFallback": {

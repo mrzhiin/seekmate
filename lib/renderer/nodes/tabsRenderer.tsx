@@ -1,6 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScrollView, View } from "react-native";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
 import { useRenderNodeChildren } from "../node";

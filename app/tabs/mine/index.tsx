@@ -2,7 +2,7 @@ import { Header } from "@react-navigation/elements";
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshControl, ScrollView } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView } from "react-native";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useStore } from "zustand";
 import { MineResolver } from "@/components/mine/mineResolver";
@@ -32,6 +32,9 @@ const Screen = () => {
 			edges={{
 				bottom: true,
 			}}
+			style={{
+				flex: 1,
+			}}
 		>
 			<ScrollView
 				ref={scrollViewRef}
@@ -43,7 +46,7 @@ const Screen = () => {
 				showsHorizontalScrollIndicator={false}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{
-					flex: 1,
+					flexGrow: 1,
 				}}
 			>
 				<Header

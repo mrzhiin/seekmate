@@ -45,6 +45,12 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 				},
 			},
 		],
+		[
+			"expo-font",
+			{
+				fonts: ["./assets/fonts/SeekMateEmoji.ttf"],
+			},
+		],
 	];
 
 	if (

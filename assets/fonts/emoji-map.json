@@ -1,0 +1,1010 @@
+[
+  {
+    "src": "ac/01.png",
+    "value": "\uE000"
+  },
+  {
+    "src": "ac/02.png",
+    "value": "\uE001"
+  },
+  {
+    "src": "ac/03.png",
+    "value": "\uE002"
+  },
+  {
+    "src": "ac/04.png",
+    "value": "\uE003"
+  },
+  {
+    "src": "ac/05.png",
+    "value": "\uE004"
+  },
+  {
+    "src": "ac/06.png",
+    "value": "\uE005"
+  },
+  {
+    "src": "ac/07.png",
+    "value": "\uE006"
+  },
+  {
+    "src": "ac/08.png",
+    "value": "\uE007"
+  },
+  {
+    "src": "ac/09.png",
+    "value": "\uE008"
+  },
+  {
+    "src": "ac/10.png",
+    "value": "\uE009"
+  },
+  {
+    "src": "ac/11.png",
+    "value": "\uE00A"
+  },
+  {
+    "src": "ac/12.png",
+    "value": "\uE00B"
+  },
+  {
+    "src": "ac/13.png",
+    "value": "\uE00C"
+  },
+  {
+    "src": "ac/14.png",
+    "value": "\uE00D"
+  },
+  {
+    "src": "ac/15.png",
+    "value": "\uE00E"
+  },
+  {
+    "src": "ac/16.png",
+    "value": "\uE00F"
+  },
+  {
+    "src": "ac/17.png",
+    "value": "\uE010"
+  },
+  {
+    "src": "ac/18.png",
+    "value": "\uE011"
+  },
+  {
+    "src": "ac/19.png",
+    "value": "\uE012"
+  },
+  {
+    "src": "ac/20.png",
+    "value": "\uE013"
+  },
+  {
+    "src": "ac/21.png",
+    "value": "\uE014"
+  },
+  {
+    "src": "ac/22.png",
+    "value": "\uE015"
+  },
+  {
+    "src": "ac/23.png",
+    "value": "\uE016"
+  },
+  {
+    "src": "ac/24.png",
+    "value": "\uE017"
+  },
+  {
+    "src": "ac/25.png",
+    "value": "\uE018"
+  },
+  {
+    "src": "ac/26.png",
+    "value": "\uE019"
+  },
+  {
+    "src": "ac/27.png",
+    "value": "\uE01A"
+  },
+  {
+    "src": "ac/28.png",
+    "value": "\uE01B"
+  },
+  {
+    "src": "ac/29.png",
+    "value": "\uE01C"
+  },
+  {
+    "src": "ac/30.png",
+    "value": "\uE01D"
+  },
+  {
+    "src": "ac/31.png",
+    "value": "\uE01E"
+  },
+  {
+    "src": "ac/32.png",
+    "value": "\uE01F"
+  },
+  {
+    "src": "ac/33.png",
+    "value": "\uE020"
+  },
+  {
+    "src": "ac/34.png",
+    "value": "\uE021"
+  },
+  {
+    "src": "ac/35.png",
+    "value": "\uE022"
+  },
+  {
+    "src": "ac/36.png",
+    "value": "\uE023"
+  },
+  {
+    "src": "ac/37.png",
+    "value": "\uE024"
+  },
+  {
+    "src": "ac/38.png",
+    "value": "\uE025"
+  },
+  {
+    "src": "ac/39.png",
+    "value": "\uE026"
+  },
+  {
+    "src": "ac/40.png",
+    "value": "\uE027"
+  },
+  {
+    "src": "ac/41.png",
+    "value": "\uE028"
+  },
+  {
+    "src": "ac/42.png",
+    "value": "\uE029"
+  },
+  {
+    "src": "ac/43.png",
+    "value": "\uE02A"
+  },
+  {
+    "src": "ac/44.png",
+    "value": "\uE02B"
+  },
+  {
+    "src": "ac/45.png",
+    "value": "\uE02C"
+  },
+  {
+    "src": "ac/46.png",
+    "value": "\uE02D"
+  },
+  {
+    "src": "ac/47.png",
+    "value": "\uE02E"
+  },
+  {
+    "src": "ac/48.png",
+    "value": "\uE02F"
+  },
+  {
+    "src": "ac/49.png",
+    "value": "\uE030"
+  },
+  {
+    "src": "ac/50.png",
+    "value": "\uE031"
+  },
+  {
+    "src": "ac/51.png",
+    "value": "\uE032"
+  },
+  {
+    "src": "ac/52.png",
+    "value": "\uE033"
+  },
+  {
+    "src": "ac/53.png",
+    "value": "\uE034"
+  },
+  {
+    "src": "ac/54.png",
+    "value": "\uE035"
+  },
+  {
+    "src": "ac/1001.png",
+    "value": "\uE036"
+  },
+  {
+    "src": "ac/1002.png",
+    "value": "\uE037"
+  },
+  {
+    "src": "ac/1003.png",
+    "value": "\uE038"
+  },
+  {
+    "src": "ac/1004.png",
+    "value": "\uE039"
+  },
+  {
+    "src": "ac/1005.png",
+    "value": "\uE03A"
+  },
+  {
+    "src": "ac/1006.png",
+    "value": "\uE03B"
+  },
+  {
+    "src": "ac/1007.png",
+    "value": "\uE03C"
+  },
+  {
+    "src": "ac/1008.png",
+    "value": "\uE03D"
+  },
+  {
+    "src": "ac/1009.png",
+    "value": "\uE03E"
+  },
+  {
+    "src": "ac/1010.png",
+    "value": "\uE03F"
+  },
+  {
+    "src": "ac/1011.png",
+    "value": "\uE040"
+  },
+  {
+    "src": "ac/1012.png",
+    "value": "\uE041"
+  },
+  {
+    "src": "ac/1013.png",
+    "value": "\uE042"
+  },
+  {
+    "src": "ac/1014.png",
+    "value": "\uE043"
+  },
+  {
+    "src": "ac/1015.png",
+    "value": "\uE044"
+  },
+  {
+    "src": "ac/1016.png",
+    "value": "\uE045"
+  },
+  {
+    "src": "ac/1017.png",
+    "value": "\uE046"
+  },
+  {
+    "src": "ac/1018.png",
+    "value": "\uE047"
+  },
+  {
+    "src": "ac/1019.png",
+    "value": "\uE048"
+  },
+  {
+    "src": "ac/1020.png",
+    "value": "\uE049"
+  },
+  {
+    "src": "ac/1021.png",
+    "value": "\uE04A"
+  },
+  {
+    "src": "ac/1022.png",
+    "value": "\uE04B"
+  },
+  {
+    "src": "ac/1023.png",
+    "value": "\uE04C"
+  },
+  {
+    "src": "ac/1024.png",
+    "value": "\uE04D"
+  },
+  {
+    "src": "ac/1025.png",
+    "value": "\uE04E"
+  },
+  {
+    "src": "ac/1026.png",
+    "value": "\uE04F"
+  },
+  {
+    "src": "ac/1027.png",
+    "value": "\uE050"
+  },
+  {
+    "src": "ac/1028.png",
+    "value": "\uE051"
+  },
+  {
+    "src": "ac/1029.png",
+    "value": "\uE052"
+  },
+  {
+    "src": "ac/1030.png",
+    "value": "\uE053"
+  },
+  {
+    "src": "ac/1031.png",
+    "value": "\uE054"
+  },
+  {
+    "src": "ac/1032.png",
+    "value": "\uE055"
+  },
+  {
+    "src": "ac/1033.png",
+    "value": "\uE056"
+  },
+  {
+    "src": "ac/1034.png",
+    "value": "\uE057"
+  },
+  {
+    "src": "ac/1035.png",
+    "value": "\uE058"
+  },
+  {
+    "src": "ac/1036.png",
+    "value": "\uE059"
+  },
+  {
+    "src": "ac/1037.png",
+    "value": "\uE05A"
+  },
+  {
+    "src": "ac/1038.png",
+    "value": "\uE05B"
+  },
+  {
+    "src": "ac/1039.png",
+    "value": "\uE05C"
+  },
+  {
+    "src": "ac/1040.png",
+    "value": "\uE05D"
+  },
+  {
+    "src": "ac/2001.png",
+    "value": "\uE05E"
+  },
+  {
+    "src": "ac/2002.png",
+    "value": "\uE05F"
+  },
+  {
+    "src": "ac/2003.png",
+    "value": "\uE060"
+  },
+  {
+    "src": "ac/2004.png",
+    "value": "\uE061"
+  },
+  {
+    "src": "ac/2005.png",
+    "value": "\uE062"
+  },
+  {
+    "src": "ac/2006.png",
+    "value": "\uE063"
+  },
+  {
+    "src": "ac/2007.png",
+    "value": "\uE064"
+  },
+  {
+    "src": "ac/2008.png",
+    "value": "\uE065"
+  },
+  {
+    "src": "ac/2009.png",
+    "value": "\uE066"
+  },
+  {
+    "src": "ac/2010.png",
+    "value": "\uE067"
+  },
+  {
+    "src": "ac/2011.png",
+    "value": "\uE068"
+  },
+  {
+    "src": "ac/2012.png",
+    "value": "\uE069"
+  },
+  {
+    "src": "ac/2013.png",
+    "value": "\uE06A"
+  },
+  {
+    "src": "ac/2014.png",
+    "value": "\uE06B"
+  },
+  {
+    "src": "ac/2015.png",
+    "value": "\uE06C"
+  },
+  {
+    "src": "ac/2016.png",
+    "value": "\uE06D"
+  },
+  {
+    "src": "ac/2017.png",
+    "value": "\uE06E"
+  },
+  {
+    "src": "ac/2018.png",
+    "value": "\uE06F"
+  },
+  {
+    "src": "ac/2019.png",
+    "value": "\uE070"
+  },
+  {
+    "src": "ac/2020.png",
+    "value": "\uE071"
+  },
+  {
+    "src": "ac/2021.png",
+    "value": "\uE072"
+  },
+  {
+    "src": "ac/2022.png",
+    "value": "\uE073"
+  },
+  {
+    "src": "ac/2023.png",
+    "value": "\uE074"
+  },
+  {
+    "src": "ac/2024.png",
+    "value": "\uE075"
+  },
+  {
+    "src": "ac/2025.png",
+    "value": "\uE076"
+  },
+  {
+    "src": "ac/2026.png",
+    "value": "\uE077"
+  },
+  {
+    "src": "ac/2027.png",
+    "value": "\uE078"
+  },
+  {
+    "src": "ac/2028.png",
+    "value": "\uE079"
+  },
+  {
+    "src": "ac/2029.png",
+    "value": "\uE07A"
+  },
+  {
+    "src": "ac/2030.png",
+    "value": "\uE07B"
+  },
+  {
+    "src": "ac/2031.png",
+    "value": "\uE07C"
+  },
+  {
+    "src": "ac/2032.png",
+    "value": "\uE07D"
+  },
+  {
+    "src": "ac/2033.png",
+    "value": "\uE07E"
+  },
+  {
+    "src": "ac/2034.png",
+    "value": "\uE07F"
+  },
+  {
+    "src": "ac/2035.png",
+    "value": "\uE080"
+  },
+  {
+    "src": "ac/2036.png",
+    "value": "\uE081"
+  },
+  {
+    "src": "ac/2037.png",
+    "value": "\uE082"
+  },
+  {
+    "src": "ac/2038.png",
+    "value": "\uE083"
+  },
+  {
+    "src": "ac/2039.png",
+    "value": "\uE084"
+  },
+  {
+    "src": "ac/2040.png",
+    "value": "\uE085"
+  },
+  {
+    "src": "ac/2041.png",
+    "value": "\uE086"
+  },
+  {
+    "src": "ac/2042.png",
+    "value": "\uE087"
+  },
+  {
+    "src": "ac/2043.png",
+    "value": "\uE088"
+  },
+  {
+    "src": "ac/2044.png",
+    "value": "\uE089"
+  },
+  {
+    "src": "ac/2045.png",
+    "value": "\uE08A"
+  },
+  {
+    "src": "ac/2046.png",
+    "value": "\uE08B"
+  },
+  {
+    "src": "ac/2047.png",
+    "value": "\uE08C"
+  },
+  {
+    "src": "ac/2048.png",
+    "value": "\uE08D"
+  },
+  {
+    "src": "ac/2049.png",
+    "value": "\uE08E"
+  },
+  {
+    "src": "ac/2050.png",
+    "value": "\uE08F"
+  },
+  {
+    "src": "ac/2051.png",
+    "value": "\uE090"
+  },
+  {
+    "src": "ac/2052.png",
+    "value": "\uE091"
+  },
+  {
+    "src": "ac/2053.png",
+    "value": "\uE092"
+  },
+  {
+    "src": "ac/2054.png",
+    "value": "\uE093"
+  },
+  {
+    "src": "ac/2055.png",
+    "value": "\uE094"
+  },
+  {
+    "src": "emoji/00.png",
+    "value": "\uE095"
+  },
+  {
+    "src": "emoji/01.png",
+    "value": "\uE096"
+  },
+  {
+    "src": "emoji/02.png",
+    "value": "\uE097"
+  },
+  {
+    "src": "emoji/03.png",
+    "value": "\uE098"
+  },
+  {
+    "src": "emoji/04.png",
+    "value": "\uE099"
+  },
+  {
+    "src": "emoji/05.png",
+    "value": "\uE09A"
+  },
+  {
+    "src": "emoji/06.png",
+    "value": "\uE09B"
+  },
+  {
+    "src": "emoji/07.png",
+    "value": "\uE09C"
+  },
+  {
+    "src": "emoji/08.png",
+    "value": "\uE09D"
+  },
+  {
+    "src": "emoji/09.png",
+    "value": "\uE09E"
+  },
+  {
+    "src": "emoji/10.png",
+    "value": "\uE09F"
+  },
+  {
+    "src": "emoji/11.png",
+    "value": "\uE0A0"
+  },
+  {
+    "src": "emoji/12.png",
+    "value": "\uE0A1"
+  },
+  {
+    "src": "emoji/13.png",
+    "value": "\uE0A2"
+  },
+  {
+    "src": "emoji/14.png",
+    "value": "\uE0A3"
+  },
+  {
+    "src": "emoji/15.png",
+    "value": "\uE0A4"
+  },
+  {
+    "src": "emoji/16.png",
+    "value": "\uE0A5"
+  },
+  {
+    "src": "emoji/17.png",
+    "value": "\uE0A6"
+  },
+  {
+    "src": "emoji/18.png",
+    "value": "\uE0A7"
+  },
+  {
+    "src": "emoji/19.png",
+    "value": "\uE0A8"
+  },
+  {
+    "src": "emoji/20.png",
+    "value": "\uE0A9"
+  },
+  {
+    "src": "emoji/21.png",
+    "value": "\uE0AA"
+  },
+  {
+    "src": "emoji/22.png",
+    "value": "\uE0AB"
+  },
+  {
+    "src": "emoji/23.png",
+    "value": "\uE0AC"
+  },
+  {
+    "src": "emoji/24.png",
+    "value": "\uE0AD"
+  },
+  {
+    "src": "emoji/25.png",
+    "value": "\uE0AE"
+  },
+  {
+    "src": "emoji/26.png",
+    "value": "\uE0AF"
+  },
+  {
+    "src": "emoji/27.png",
+    "value": "\uE0B0"
+  },
+  {
+    "src": "emoji/28.png",
+    "value": "\uE0B1"
+  },
+  {
+    "src": "emoji/29.png",
+    "value": "\uE0B2"
+  },
+  {
+    "src": "emoji/30.png",
+    "value": "\uE0B3"
+  },
+  {
+    "src": "emoji/31.png",
+    "value": "\uE0B4"
+  },
+  {
+    "src": "emoji/32.png",
+    "value": "\uE0B5"
+  },
+  {
+    "src": "emoji/33.png",
+    "value": "\uE0B6"
+  },
+  {
+    "src": "emoji/34.png",
+    "value": "\uE0B7"
+  },
+  {
+    "src": "emoji/35.png",
+    "value": "\uE0B8"
+  },
+  {
+    "src": "emoji/36.png",
+    "value": "\uE0B9"
+  },
+  {
+    "src": "emoji/37.png",
+    "value": "\uE0BA"
+  },
+  {
+    "src": "emoji/38.png",
+    "value": "\uE0BB"
+  },
+  {
+    "src": "emoji/39.png",
+    "value": "\uE0BC"
+  },
+  {
+    "src": "emoji/40.png",
+    "value": "\uE0BD"
+  },
+  {
+    "src": "emoji/41.png",
+    "value": "\uE0BE"
+  },
+  {
+    "src": "emoji/42.png",
+    "value": "\uE0BF"
+  },
+  {
+    "src": "emoji/43.png",
+    "value": "\uE0C0"
+  },
+  {
+    "src": "emoji/44.png",
+    "value": "\uE0C1"
+  },
+  {
+    "src": "emoji/45.png",
+    "value": "\uE0C2"
+  },
+  {
+    "src": "emoji/46.png",
+    "value": "\uE0C3"
+  },
+  {
+    "src": "emoji/47.png",
+    "value": "\uE0C4"
+  },
+  {
+    "src": "emoji/48.png",
+    "value": "\uE0C5"
+  },
+  {
+    "src": "xhj/001.png",
+    "value": "\uE0C6"
+  },
+  {
+    "src": "xhj/002.png",
+    "value": "\uE0C7"
+  },
+  {
+    "src": "xhj/003.png",
+    "value": "\uE0C8"
+  },
+  {
+    "src": "xhj/004.gif",
+    "value": "\uE0C9"
+  },
+  {
+    "src": "xhj/005.png",
+    "value": "\uE0CA"
+  },
+  {
+    "src": "xhj/006.png",
+    "value": "\uE0CB"
+  },
+  {
+    "src": "xhj/007.png",
+    "value": "\uE0CC"
+  },
+  {
+    "src": "xhj/008.gif",
+    "value": "\uE0CD"
+  },
+  {
+    "src": "xhj/009.gif",
+    "value": "\uE0CE"
+  },
+  {
+    "src": "xhj/010.gif",
+    "value": "\uE0CF"
+  },
+  {
+    "src": "xhj/011.png",
+    "value": "\uE0D0"
+  },
+  {
+    "src": "xhj/012.gif",
+    "value": "\uE0D1"
+  },
+  {
+    "src": "xhj/013.gif",
+    "value": "\uE0D2"
+  },
+  {
+    "src": "xhj/014.gif",
+    "value": "\uE0D3"
+  },
+  {
+    "src": "xhj/015.gif",
+    "value": "\uE0D4"
+  },
+  {
+    "src": "xhj/016.gif",
+    "value": "\uE0D5"
+  },
+  {
+    "src": "xhj/017.gif",
+    "value": "\uE0D6"
+  },
+  {
+    "src": "xhj/018.gif",
+    "value": "\uE0D7"
+  },
+  {
+    "src": "xhj/019.gif",
+    "value": "\uE0D8"
+  },
+  {
+    "src": "xhj/020.gif",
+    "value": "\uE0D9"
+  },
+  {
+    "src": "xhj/021.gif",
+    "value": "\uE0DA"
+  },
+  {
+    "src": "xhj/022.png",
+    "value": "\uE0DB"
+  },
+  {
+    "src": "xhj/023.gif",
+    "value": "\uE0DC"
+  },
+  {
+    "src": "xhj/024.png",
+    "value": "\uE0DD"
+  },
+  {
+    "src": "xhj/025.png",
+    "value": "\uE0DE"
+  },
+  {
+    "src": "xhj/026.gif",
+    "value": "\uE0DF"
+  },
+  {
+    "src": "xhj/027.gif",
+    "value": "\uE0E0"
+  },
+  {
+    "src": "xhj/028.gif",
+    "value": "\uE0E1"
+  },
+  {
+    "src": "xhj/029.gif",
+    "value": "\uE0E2"
+  },
+  {
+    "src": "xhj/030.gif",
+    "value": "\uE0E3"
+  },
+  {
+    "src": "xhj/031.png",
+    "value": "\uE0E4"
+  },
+  {
+    "src": "xhj/032.png",
+    "value": "\uE0E5"
+  },
+  {
+    "src": "yct/001.gif",
+    "value": "\uE0E6"
+  },
+  {
+    "src": "yct/002.gif",
+    "value": "\uE0E7"
+  },
+  {
+    "src": "yct/003.gif",
+    "value": "\uE0E8"
+  },
+  {
+    "src": "yct/004.gif",
+    "value": "\uE0E9"
+  },
+  {
+    "src": "yct/005.gif",
+    "value": "\uE0EA"
+  },
+  {
+    "src": "yct/006.gif",
+    "value": "\uE0EB"
+  },
+  {
+    "src": "yct/007.gif",
+    "value": "\uE0EC"
+  },
+  {
+    "src": "yct/008.gif",
+    "value": "\uE0ED"
+  },
+  {
+    "src": "yct/009.gif",
+    "value": "\uE0EE"
+  },
+  {
+    "src": "yct/010.gif",
+    "value": "\uE0EF"
+  },
+  {
+    "src": "yct/011.gif",
+    "value": "\uE0F0"
+  },
+  {
+    "src": "yct/012.gif",
+    "value": "\uE0F1"
+  },
+  {
+    "src": "yct/013.gif",
+    "value": "\uE0F2"
+  },
+  {
+    "src": "yct/014.gif",
+    "value": "\uE0F3"
+  },
+  {
+    "src": "yct/015.gif",
+    "value": "\uE0F4"
+  },
+  {
+    "src": "yct/016.gif",
+    "value": "\uE0F5"
+  },
+  {
+    "src": "yct/017.gif",
+    "value": "\uE0F6"
+  },
+  {
+    "src": "yct/018.gif",
+    "value": "\uE0F7"
+  },
+  {
+    "src": "yct/019.gif",
+    "value": "\uE0F8"
+  },
+  {
+    "src": "yct/020.gif",
+    "value": "\uE0F9"
+  },
+  {
+    "src": "yct/021.gif",
+    "value": "\uE0FA"
+  },
+  {
+    "src": "yct/022.gif",
+    "value": "\uE0FB"
+  }
+]

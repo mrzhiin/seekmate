@@ -8,11 +8,10 @@ import WebView, {
 	type WebViewNavigation,
 } from "react-native-webview";
 import * as v from "valibot";
-import { useStore } from "zustand";
+import { signInUserSession } from "@/lib/auth/session";
 import { config } from "@/lib/config";
 import { ScreenName } from "@/stack/screenName";
 import type { ScreenParams } from "@/stack/screenParams";
-import { userStore } from "@/store/userStore";
 
 const MessageSuccessSchema = v.object({
 	success: v.literal(true),
@@ -60,7 +59,6 @@ if (UsernameEl) {
 const Screen = () => {
 	const navigation = useNavigation<NativeStackNavigationProp<ScreenParams>>();
 	const webViewRef = useRef<WebView>(null);
-	const update = useStore(userStore, (s) => s.update);
 	const { t } = useTranslation();
 
 	const prevUrlPathnameRef = useRef<string>(null);
@@ -93,9 +91,7 @@ const Screen = () => {
 		);
 
 		if (result.success) {
-			update({
-				id: result.output.data.userId,
-			});
+			signInUserSession(result.output.data.userId);
 
 			navigation.popTo(ScreenName.Tabs);
 		}

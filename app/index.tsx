@@ -10,6 +10,7 @@ import { CategoriesProvider } from "@/state/categories";
 import { LocalizationProvider } from "@/state/localization";
 import { NavigationProvider } from "@/state/navigation";
 import { QueryProvider } from "@/state/query";
+import { SessionProvider } from "@/state/session";
 import { ThemeProvider } from "@/state/theme";
 import { WebServiceProvider } from "@/state/web";
 
@@ -21,20 +22,22 @@ export const App = Sentry.wrap(() => {
 					<ReanimatedTrueSheetProvider>
 						<LocalizationProvider>
 							<ThemeProvider>
-								<QueryProvider>
-									<CategoriesProvider />
-									<WebServiceProvider>
-										{/* TODO: Bug? */}
-										<View
-											style={{
-												display: "none",
-											}}
-										/>
-										<NavigationProvider>
-											<RootStack />
-										</NavigationProvider>
-									</WebServiceProvider>
-								</QueryProvider>
+								<SessionProvider>
+									<QueryProvider>
+										<CategoriesProvider />
+										<WebServiceProvider>
+											{/* TODO: Bug? */}
+											<View
+												style={{
+													display: "none",
+												}}
+											/>
+											<NavigationProvider>
+												<RootStack />
+											</NavigationProvider>
+										</WebServiceProvider>
+									</QueryProvider>
+								</SessionProvider>
 							</ThemeProvider>
 						</LocalizationProvider>
 					</ReanimatedTrueSheetProvider>

@@ -117,6 +117,13 @@
 			"signingIn": "Checking in",
 			"loading": "Loading",
 			"notSignedIn": "Not checked in"
+		},
+		"recentViewedPosts": {
+			"title": "Recently viewed",
+			"time": {
+				"yesterday": "Yesterday {{time}}",
+				"daysAgo": "{{count}} days ago"
+			}
 		}
 	},
 	"errorFallback": {

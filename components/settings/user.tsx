@@ -2,6 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { useStore } from "zustand";
+import { signOutUserSession } from "@/lib/auth/session";
 import { ScreenName } from "@/stack/screenName";
 import { userStore } from "@/store/userStore";
 import { Avatar } from "../avatar";
@@ -28,7 +29,7 @@ export const User = () => {
 							text: t("common.confirm"),
 							style: "destructive",
 							onPress: () => {
-								userStore.getState().reset();
+								signOutUserSession();
 							},
 						},
 					]);

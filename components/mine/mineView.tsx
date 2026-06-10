@@ -10,12 +10,13 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
-import { Pressable } from "react-native-gesture-handler";
 import { useStore } from "zustand";
 import { Avatar } from "@/components/avatar";
 import { Attendance } from "@/components/mine/attendance";
 import { Notification } from "@/components/mine/notification";
 import { Rank } from "@/components/mine/rank";
+import { RecentViewedPosts } from "@/components/mine/recentViewedPosts";
+import { Pressable } from "@/components/pressable";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { Text } from "@/components/ui/text";
 import { useUserSuspenseQuery } from "@/hooks/services/useUserQuery";
@@ -163,6 +164,7 @@ export const MineView = ({
 					<Attendance />
 					<Notification />
 				</View>
+				<RecentViewedPosts />
 			</View>
 		</MineRefreshContext.Provider>
 	);

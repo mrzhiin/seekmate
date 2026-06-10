@@ -5,10 +5,9 @@ import { useNavigation } from "@react-navigation/native";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { type ScrollViewProps, View } from "react-native";
-import { RefreshControl } from "react-native-gesture-handler";
+import { RefreshControl, type ScrollViewProps, View } from "react-native";
 import {
 	KeyboardChatScrollView,
 	type KeyboardChatScrollViewProps,
@@ -36,11 +35,12 @@ import { config } from "@/lib/config";
 import type { Comment as CommentType, PostPageData } from "@/lib/parser";
 import { userStore } from "@/store/userStore";
 
-const VirtualizedListScrollView = (
-	props: ScrollViewProps & KeyboardChatScrollViewProps,
-) => {
-	return <KeyboardChatScrollView {...props} />;
-};
+const VirtualizedListScrollView = forwardRef<
+	React.ComponentRef<typeof KeyboardChatScrollView>,
+	ScrollViewProps & KeyboardChatScrollViewProps
+>((props, ref) => {
+	return <KeyboardChatScrollView {...props} ref={ref} />;
+});
 
 export const PostView = ({
 	id,

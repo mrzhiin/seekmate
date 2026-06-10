@@ -1,8 +1,7 @@
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
-import { RefreshControl, ScrollView } from "react-native-gesture-handler";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { useStore } from "zustand";
 import { CategoryIcons } from "@/components/icon/CategoryIcon";
 import { Pressable } from "@/components/pressable";

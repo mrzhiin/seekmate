@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import { File } from "expo-file-system";
 import { startActivityAsync } from "expo-intent-launcher";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable } from "react-native-gesture-handler";
+import { Pressable } from "react-native";
 import { ErrorFallback } from "@/components/errorFallback";
 import { Spinner } from "@/components/spinner";
 import { Image, type LoadedImage } from "@/components/ui/image";
@@ -114,7 +114,7 @@ const RendererImageView = memo(
 
 		return (
 			<Pressable
-				onLongPress={async () => {
+				onPress={async () => {
 					if (!image) return;
 					if (isSavingRef.current) return;
 

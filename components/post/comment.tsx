@@ -95,17 +95,17 @@ export const Comment = observer(
 									)}
 								</View>
 							</View>
-							<View className="flex-row items-center">
+							<View className="flex-row items-center gap-2">
 								<Text className="text-muted-foreground">{dateDisplay}</Text>
-								<MaterialDesignIcons
-									size={12}
-									name="circle-medium"
+								{/* <MaterialDesignIcons
+									size={14}
+									name="circle-small"
 									className="text-muted-foreground"
-								/>
+								/> */}
 								<Text className="text-muted-foreground">{timeDisplay}</Text>
 								<MaterialDesignIcons
-									size={12}
-									name="circle-medium"
+									size={14}
+									name="circle-small"
 									className="text-muted-foreground"
 								/>
 								<Text className="text-muted-foreground">{relativeDisplay}</Text>

@@ -5,7 +5,7 @@
 	"type": "module",
 	"main": "index.ts",
 	"scripts": {
-		"start": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- expo start",
+		"start": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- expo start -c",
 		"prebuild": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- expo prebuild",
 		"build": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --mode=release",
 		"build:apk": "dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- rnc-cli build-android --tasks assembleRelease",
@@ -47,6 +47,7 @@
 		"expo-crypto": "^56.0.4",
 		"expo-dev-client": "^56.0.19",
 		"expo-file-system": "^56.0.7",
+		"expo-font": "^56.0.5",
 		"expo-image": "^56.0.10",
 		"expo-intent-launcher": "^56.0.4",
 		"expo-linear-gradient": "^56.0.4",

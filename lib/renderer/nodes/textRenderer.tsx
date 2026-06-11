@@ -3,16 +3,26 @@ import { memo, type ReactNode, useContext, useMemo } from "react";
 import { Text as RNText } from "react-native";
 import { NodeContext } from "../context";
 import type { ExtractFromPredicate, isTextNode } from "../types";
-import { EmojiText } from "./emojiText";
+import {
+	EMOJI_TOKEN_REGEXP,
+	EmojiText,
+	HAS_EMOJI_TOKEN_REGEXP,
+	isEmojiToken,
+} from "./emojiText";
 
-const FormatTextTypeMap = new Map<number, TextFormatType | string>(
-	Object.entries(TEXT_TYPE_TO_FORMAT).map(([key, value]) => {
-		return [value, key];
-	}),
-);
-
-const EMOJI_TOKEN_REGEXP = /:(?:ac|yct|xhj|emoji)\d+:/g;
-const HAS_EMOJI_TOKEN_REGEXP = /:(?:ac|yct|xhj|emoji)\d+:/;
+const formatClassNameMap = new Map<TextFormatType | string, string>([
+	["code", "text-slate-300 bg-slate-600"],
+	["bold", "font-bold"],
+	["underline", "underline"],
+	["italic", "italic"],
+	["highlight", "text-primary-foreground bg-primary"],
+	["strikethrough", "line-through"],
+	["subscript", "text-xs align-baseline"],
+	["superscript", "text-xs align-super"],
+	["lowercase", "lowercase"],
+	["uppercase", "uppercase"],
+	["capitalize", "capitalize"],
+]);
 
 const renderTextWithEmojiPlaceholders = (text: string, className?: string) => {
 	if (!HAS_EMOJI_TOKEN_REGEXP.test(text)) return text;
@@ -26,19 +36,23 @@ const renderTextWithEmojiPlaceholders = (text: string, className?: string) => {
 	while (match !== null) {
 		const token = match[0];
 		const index = match.index;
+		const isValidEmojiToken = isEmojiToken(token);
 
-		if (index > lastIndex) {
+		if (isValidEmojiToken && index > lastIndex) {
 			parts.push(text.slice(lastIndex, index));
 		}
 
-		parts.push(
-			<EmojiText
-				key={`${token}-${index}`}
-				token={token}
-				className={className}
-			/>,
-		);
-		lastIndex = index + token.length;
+		if (isValidEmojiToken) {
+			parts.push(
+				<EmojiText
+					key={`${token}-${index}`}
+					token={token}
+					className={className}
+				/>,
+			);
+			lastIndex = index + token.length;
+		}
+
 		match = EMOJI_TOKEN_REGEXP.exec(text);
 	}
 
@@ -54,48 +68,17 @@ export const TextRenderer = memo(
 		const nodeContext = useContext(NodeContext);
 
 		const styleClassName = useMemo(() => {
-			const textType = FormatTextTypeMap.get(node.format);
-			let className = "";
+			const classNames = [nodeContext.textClassName];
 
-			switch (textType) {
-				case "code":
-					className = "text-slate-300 bg-slate-600";
-					break;
-				case "bold":
-					className = "font-bold";
-					break;
-				case "underline":
-					className = "underline";
-					break;
-				case "italic":
-					className = "italic";
-					break;
-				case "highlight":
-					className = "text-primary-foreground bg-primary";
-					break;
-				case "strikethrough":
-					className = "line-through";
-					break;
-				case "subscript":
-					className = "text-xs align-baseline";
-					break;
-				case "superscript":
-					className = "text-xs align-super";
-					break;
-				case "lowercase":
-					className = "lowercase";
-					break;
-				case "uppercase":
-					className = "uppercase";
-					break;
-				case "capitalize":
-					className = "capitalize";
-					break;
-				default:
-					break;
+			for (const [textType, format] of Object.entries(TEXT_TYPE_TO_FORMAT)) {
+				if ((node.format & format) === 0) {
+					continue;
+				}
+
+				classNames.push(formatClassNameMap.get(textType) ?? "");
 			}
 
-			return `${nodeContext.textClassName} ${className}`;
+			return classNames.filter(Boolean).join(" ");
 		}, [node.format, nodeContext.textClassName]);
 
 		const content = useMemo(

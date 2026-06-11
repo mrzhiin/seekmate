@@ -1,10 +1,5 @@
 import * as Linking from "expo-linking";
-import {
-	type SerializedLexicalNode,
-	TEXT_TYPE_TO_FORMAT,
-	type TextFormatType,
-	TextNode,
-} from "lexical";
+import { type SerializedLexicalNode, TextNode } from "lexical";
 import { memo, useCallback, useContext, useMemo } from "react";
 import { Text as RNText, View } from "react-native";
 import * as v from "valibot";
@@ -13,6 +8,7 @@ import { config } from "../config";
 import { NodeContext } from "./context";
 import { ImageRenderer } from "./nodes/imageRenderer";
 import { TabsRenderer } from "./nodes/tabsRenderer";
+import { TextRenderer } from "./nodes/textRenderer";
 import {
 	type ExtractFromPredicate,
 	isCodeNode,
@@ -28,12 +24,6 @@ import {
 	isTabsNode,
 	isTextNode,
 } from "./types";
-
-const FormatTextTypeMap = new Map<number, TextFormatType | string>(
-	Object.entries(TEXT_TYPE_TO_FORMAT).map(([key, value]) => {
-		return [value, key];
-	}),
-);
 
 type TextGroup = (
 	| ExtractFromPredicate<isTextNode>
@@ -153,7 +143,7 @@ export const HeadingRenderer = memo(
 
 			switch (node.tag) {
 				case "h1":
-					c = "text-4xl";
+					c = "text-3xl";
 					break;
 				case "h2":
 					c = "text-2xl";
@@ -180,63 +170,6 @@ export const HeadingRenderer = memo(
 					{useRenderNodeChildren(node.children)}
 				</RNText>
 			</NodeContext.Provider>
-		);
-	},
-);
-
-export const TextRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isTextNode> }) => {
-		const nodeContext = useContext(NodeContext);
-
-		const styleClassName = useMemo(() => {
-			const textType = FormatTextTypeMap.get(node.format);
-			let className = "";
-
-			switch (textType) {
-				case "code":
-					className = "text-slate-300 bg-slate-600";
-					break;
-				case "bold":
-					className = "font-bold";
-					break;
-				case "underline":
-					className = "underline";
-					break;
-				case "italic":
-					className = "italic";
-					break;
-				case "highlight":
-					className = "text-primary-foreground bg-primary";
-					break;
-				case "strikethrough":
-					className = "line-through";
-					break;
-				case "subscript":
-					className = "text-xs align-baseline";
-					break;
-				case "superscript":
-					className = "text-xs align-super";
-					break;
-				case "lowercase":
-					className = "lowercase";
-					break;
-				case "uppercase":
-					className = "uppercase";
-					break;
-				case "capitalize":
-					className = "capitalize";
-					break;
-				default:
-					break;
-			}
-
-			return `${nodeContext.textClassName} ${className}`;
-		}, [node.format, nodeContext.textClassName]);
-
-		return (
-			<RNText className={styleClassName} selectable>
-				{node.text}
-			</RNText>
 		);
 	},
 );

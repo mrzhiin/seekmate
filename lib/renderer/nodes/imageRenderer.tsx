@@ -1,11 +1,16 @@
 import Constants from "expo-constants";
 import { File } from "expo-file-system";
 import { startActivityAsync } from "expo-intent-launcher";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import { ErrorFallback } from "@/components/errorFallback";
 import { Spinner } from "@/components/spinner";
-import { Image, type LoadedImage } from "@/components/ui/image";
+import {
+	Image,
+	type ImageError,
+	type LoadedImage,
+} from "@/components/ui/image";
+import { Sentry } from "@/lib/sentry";
 import { config } from "../../config";
 import type { ExtractFromPredicate, isImageNode } from "../types";
 
@@ -50,11 +55,17 @@ const useRendererImageRequestSource = (url?: string) => {
 		if (!url) return;
 
 		const load = async () => {
-			webViewUserAgentPromise ??= Constants.getWebViewUserAgentAsync();
-			const value = await webViewUserAgentPromise;
+			try {
+				webViewUserAgentPromise ??= Constants.getWebViewUserAgentAsync();
+				const value = await webViewUserAgentPromise;
 
-			if (!cancelled) {
-				setUserAgent(value);
+				if (!cancelled) {
+					setUserAgent(value);
+				}
+			} catch {
+				if (!cancelled) {
+					setUserAgent(null);
+				}
 			}
 		};
 
@@ -106,6 +117,26 @@ const RendererImageView = memo(
 		const [image, setImage] = useState<LoadedImage>();
 		const [error, setError] = useState<Error>();
 
+		const handleImageError = useCallback(
+			(error: Error) => {
+				const imageError = error as ImageError;
+
+				Sentry.withScope((scope) => {
+					scope.setTag("renderer", "image");
+					scope.setContext("image", {
+						errorContextJson: JSON.stringify(imageError.imageContext),
+						rendererSourceJson: JSON.stringify(source),
+						stage: imageError.imageContext?.stage,
+						uri: source.uri,
+					});
+					Sentry.captureException(error);
+				});
+
+				setError(error);
+			},
+			[source],
+		);
+
 		if (error) {
 			return <ErrorFallback />;
 		}
@@ -131,6 +162,10 @@ const RendererImageView = memo(
 								type: "image/png",
 							});
 						}
+					} catch (error) {
+						handleImageError(
+							error instanceof Error ? error : new Error(String(error)),
+						);
 					} finally {
 						isSavingRef.current = false;
 					}
@@ -138,7 +173,7 @@ const RendererImageView = memo(
 			>
 				{!image && <Spinner />}
 				<Image
-					onImageError={setError}
+					onImageError={handleImageError}
 					onImageLoad={setImage}
 					source={source}
 					style={{

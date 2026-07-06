@@ -31,7 +31,7 @@ function $convertImageElement(domNode: Node): null | DOMConversionOutput {
 }
 
 export type SerializedImageNode = Spread<
-	ImageNodeProperty,
+	ImageNodeProperty & { type: "image" },
 	SerializedLexicalNode
 >;
 
@@ -53,13 +53,22 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
 		return new ImageNode(node.__src, node.__altText, node.__key);
 	}
 
-	static importJSON(serializedNode: SerializedImageNode): ImageNode {
-		const { altText, src } = serializedNode;
+	static importJSON(
+		serializedNode: SerializedLexicalNode & Record<string, unknown>,
+	): ImageNode {
+		const altText =
+			typeof serializedNode.altText === "string" ? serializedNode.altText : "";
+		const src =
+			typeof serializedNode.src === "string" ? serializedNode.src : "";
 
 		return $createImageNode({
 			altText,
 			src,
-		}).updateFromJSON(serializedNode);
+		}).updateFromJSON({
+			...serializedNode,
+			altText,
+			src,
+		});
 	}
 
 	static importDOM(): DOMConversionMap | null {
@@ -72,7 +81,10 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
 	}
 
 	updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedImageNode>): this {
-		return super.updateFromJSON(serializedNode) as this;
+		const self = super.updateFromJSON(serializedNode) as this;
+		self.__altText = serializedNode.altText;
+		self.__src = serializedNode.src;
+		return self;
 	}
 
 	exportJSON(): SerializedImageNode {
@@ -80,6 +92,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
 			...super.exportJSON(),
 			altText: this.getAltText(),
 			src: this.getSrc(),
+			type: "image",
 		};
 	}
 

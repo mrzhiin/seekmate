@@ -2,9 +2,11 @@ import * as Sentry from "@sentry/react-native";
 import Constants from "expo-constants";
 import { config } from "../config";
 
-if (config.sentryDsn && !Constants.debugMode) {
+if (config.sentryDsn) {
 	Sentry.init({
 		dsn: config.sentryDsn,
+		debug: Constants.debugMode,
+		environment: Constants.debugMode ? "development" : "production",
 		// Adds more context data to events (IP address, cookies, user, etc.)
 		// For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
 		sendDefaultPii: true,

@@ -23,6 +23,7 @@ export const Comment = observer(
 		item$: Observable<CommentType>;
 		posterUserId?: number;
 		onReply?: () => void;
+		onAvatarPress?: (uid: number) => void;
 	}) => {
 		const { t } = useTranslation();
 		const item$ = props.item$;
@@ -78,7 +79,17 @@ export const Comment = observer(
 
 		return (
 			<View className="flex-row py-4 px-4 gap-2">
-				<Avatar uid={authorUid} size={40} showRank />
+				<Avatar
+					uid={authorUid}
+					size={40}
+					showRank
+					enableMenu={false}
+					onPress={() => {
+						if (authorUid != null) {
+							props.onAvatarPress?.(authorUid);
+						}
+					}}
+				/>
 				<View className="flex-1">
 					<View className="flex-row">
 						<View className="flex-1 gap-1">

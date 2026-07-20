@@ -1,11 +1,18 @@
-import { LegendList } from "@legendapp/list/react-native";
+import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import { batch } from "@legendapp/state";
 import { useObservable } from "@legendapp/state/react";
 import { useNavigation } from "@react-navigation/native";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
-import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, type ScrollViewProps, View } from "react-native";
 import {
@@ -16,11 +23,17 @@ import {
 } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
 import { useStore } from "zustand";
+import { AvatarMenu } from "@/components/avatar";
 import { BackPrevent } from "@/components/backPrevent";
 import { ListFooter } from "@/components/list/footer";
 import { Comment } from "@/components/post/comment";
 import { InputBar } from "@/components/post/inputBar";
 import { Original } from "@/components/post/original";
+import {
+	getPostScrollPosition,
+	type PostScrollPosition,
+	setPostScrollPosition,
+} from "@/components/post/scrollMemory";
 import { Pressable } from "@/components/pressable";
 import { TrueSheetMenu } from "@/components/trueSheet";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
@@ -51,10 +64,20 @@ export const PostView = ({
 }) => {
 	const navigation = useNavigation();
 	const userId = useStore(userStore, (s) => s.id);
+	const [currentAvatarUid, setCurrentAvatarUid] = useState<
+		number | undefined
+	>();
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const inputBarRef = useRef<InputBar>(null);
 	const trueSheetRef = useRef<TrueSheetMenu>(null);
+	const avatarMenuRef = useRef<TrueSheetMenu>(null);
+	const handleAvatarPress = useCallback((uid: number) => {
+		setCurrentAvatarUid(uid);
+		avatarMenuRef.current?.present();
+	}, []);
+	const legendListRef = useRef<LegendListRef | null>(null);
+	const headerSizeRef = useRef<number | undefined>(undefined);
 	const stickyHeight = useSharedValue(0);
 	const commentsById$ = useObservable<
 		Record<
@@ -76,6 +99,7 @@ export const PostView = ({
 	} = usePostInfiniteCommentsQuery({
 		postId: id,
 	});
+
 	const refreshFirstPage = useCallback(async () => {
 		const queryKey = postInfiniteCommentsQueryKey(id);
 
@@ -93,6 +117,7 @@ export const PostView = ({
 
 		await refetch();
 	}, [id, queryClient, refetch]);
+
 	const { isRefreshing, refresh } = useRefresh(refreshFirstPage);
 
 	const comments = useMemo(() => {
@@ -112,6 +137,70 @@ export const PostView = ({
 		}
 	}, [data?.pages]);
 
+	const commentsRef = useRef(comments);
+	commentsRef.current = comments;
+
+	// 首次挂载前固定恢复方式，避免布局后切换初始位置。
+	const [initialScroll] = useState(() => {
+		const saved = getPostScrollPosition(id);
+		const scrollOffset = saved?.scrollOffset;
+		const savedScrollOffset =
+			typeof scrollOffset === "number" &&
+			Number.isFinite(scrollOffset) &&
+			scrollOffset > 1
+				? scrollOffset
+				: undefined;
+		const savedHeaderSize = saved?.headerSize;
+		const estimatedHeaderSize =
+			typeof savedHeaderSize === "number" &&
+			Number.isFinite(savedHeaderSize) &&
+			savedHeaderSize > 0
+				? savedHeaderSize
+				: undefined;
+		const savedAnchor = saved?.anchor;
+
+		if (
+			savedAnchor &&
+			typeof savedAnchor.commentId === "number" &&
+			typeof savedAnchor.floor === "number" &&
+			typeof savedAnchor.page === "number" &&
+			typeof savedAnchor.index === "number" &&
+			typeof savedAnchor.viewOffset === "number" &&
+			Number.isFinite(savedAnchor.commentId) &&
+			Number.isFinite(savedAnchor.floor) &&
+			Number.isFinite(savedAnchor.page) &&
+			Number.isInteger(savedAnchor.index) &&
+			savedAnchor.index >= 0 &&
+			Number.isFinite(savedAnchor.viewOffset)
+		) {
+			let index = comments.findIndex(
+				(comment) => comment.id === savedAnchor.commentId,
+			);
+			if (index < 0) {
+				index = comments.findIndex(
+					(comment) => comment.floor >= savedAnchor.floor,
+				);
+			}
+
+			if (index >= 0) {
+				return {
+					initialScrollIndex: {
+						index,
+						viewOffset: savedAnchor.viewOffset,
+						viewPosition: 0,
+					},
+					initialScrollOffset: undefined,
+					estimatedHeaderSize,
+				};
+			}
+		}
+
+		return {
+			initialScrollOffset: savedScrollOffset,
+			estimatedHeaderSize,
+		};
+	});
+
 	const renderItem = useCallback(
 		({ item }: { item: CommentType; index: number }) => {
 			const item$ = commentsById$[item.id];
@@ -128,11 +217,13 @@ export const PostView = ({
 							);
 						}
 					}}
+					onAvatarPress={handleAvatarPress}
 				/>
 			);
 		},
-		[commentsById$, postData.author.uid],
+		[commentsById$, handleAvatarPress, postData.author.uid],
 	);
+
 	const memoList = useCallback(
 		(props: ScrollViewProps) => (
 			<VirtualizedListScrollView
@@ -197,6 +288,87 @@ export const PostView = ({
 	}, [id, queryClient]);
 
 	useEffect(() => {
+		let stateRead = false;
+		const saveScrollPosition = () => {
+			if (stateRead) {
+				return;
+			}
+
+			try {
+				const list = legendListRef.current;
+				if (!list) {
+					return;
+				}
+
+				const state = list.getState();
+				if (!state) {
+					return;
+				}
+
+				stateRead = true;
+				const scroll = state.scroll;
+				const headerSize = headerSizeRef.current;
+				let anchor: PostScrollPosition["anchor"];
+
+				// 记录越过 header 后的评论锚点，偏移无效时仍保留像素位置。
+				if (
+					typeof scroll === "number" &&
+					Number.isFinite(scroll) &&
+					typeof headerSize === "number" &&
+					Number.isFinite(headerSize) &&
+					headerSize > 0 &&
+					scroll > headerSize &&
+					Number.isInteger(state.start) &&
+					state.start >= 0 &&
+					state.start < commentsRef.current.length
+				) {
+					try {
+						const comment = commentsRef.current[state.start];
+						const position = state.positionAtIndex(state.start);
+						const viewOffset = headerSize + position - scroll;
+
+						if (
+							typeof comment.id === "number" &&
+							typeof comment.floor === "number" &&
+							typeof comment.currentPage === "number" &&
+							Number.isFinite(position) &&
+							Number.isFinite(viewOffset)
+						) {
+							anchor = {
+								commentId: comment.id,
+								floor: comment.floor,
+								page: comment.currentPage,
+								index: state.start,
+								viewOffset,
+							};
+						}
+					} catch {
+						// 原生位置计算失败时使用像素位置兜底。
+					}
+				}
+
+				setPostScrollPosition(id, {
+					scrollOffset: typeof scroll === "number" ? scroll : Number.NaN,
+					headerSize,
+					anchor,
+				});
+			} catch {
+				// 原生 ref/state 失败时交给 cleanup 重试。
+			}
+		};
+
+		const unsubscribe = navigation.addListener(
+			"beforeRemove",
+			saveScrollPosition,
+		);
+
+		return () => {
+			saveScrollPosition();
+			unsubscribe();
+		};
+	}, [id, navigation]);
+
+	useEffect(() => {
 		if (comments?.length) {
 			batch(() => {
 				for (let index = 0; index < comments.length; index++) {
@@ -247,14 +419,35 @@ export const PostView = ({
 				}}
 			>
 				<LegendList
+					ref={legendListRef}
 					style={{
 						flex: 1,
+					}}
+					initialScrollIndex={initialScroll.initialScrollIndex}
+					initialScrollOffset={initialScroll.initialScrollOffset}
+					estimatedHeaderSize={initialScroll.estimatedHeaderSize}
+					onMetricsChange={(metrics) => {
+						headerSizeRef.current =
+							typeof metrics.headerSize === "number" &&
+							Number.isFinite(metrics.headerSize) &&
+							metrics.headerSize > 0
+								? metrics.headerSize
+								: undefined;
 					}}
 					data={comments}
 					renderItem={renderItem}
 					keyExtractor={(x) => x.id.toString()}
 					recycleItems
-					ListHeaderComponent={<Original postId={id} data={postData} />}
+					ListHeaderComponent={
+						<Original
+							postId={id}
+							data={postData}
+							onAvatarPress={() => {
+								setCurrentAvatarUid(postData.author.uid);
+								avatarMenuRef.current?.present();
+							}}
+						/>
+					}
 					showsHorizontalScrollIndicator={false}
 					showsVerticalScrollIndicator={false}
 					refreshControl={
@@ -284,7 +477,8 @@ export const PostView = ({
 					}}
 					renderScrollComponent={memoList}
 				/>
-				{userId && (
+				<AvatarMenu ref={avatarMenuRef} uid={currentAvatarUid} />
+				{userId ? (
 					<KeyboardStickyView
 						style={{
 							position: "absolute",
@@ -303,7 +497,7 @@ export const PostView = ({
 							/>
 						</View>
 					</KeyboardStickyView>
-				)}
+				) : null}
 			</KeyboardGestureArea>
 			<TrueSheetMenu
 				ref={trueSheetRef}

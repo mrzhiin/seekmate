@@ -110,7 +110,7 @@ export const AvatarMenu = ({
 				},
 			].filter((x) => x !== null)}
 		>
-			{uid ? <UserItem uid={uid} /> : null}
+			{uid ? <UserItem uid={uid} enableMenu={false} /> : null}
 		</TrueSheetMenu>
 	);
 };

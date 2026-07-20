@@ -6,7 +6,13 @@ import { config } from "@/lib/config";
 import { Avatar } from "../avatar";
 import { Pressable } from "../pressable";
 
-export const UserItem = ({ uid }: { uid: number }) => {
+export const UserItem = ({
+	uid,
+	enableMenu = true,
+}: {
+	uid: number;
+	enableMenu?: boolean;
+}) => {
 	const { data } = useRashUserQuery(uid);
 
 	return (
@@ -23,7 +29,7 @@ export const UserItem = ({ uid }: { uid: number }) => {
 					Lv.{data?.rank || "-"}
 				</Text>
 			</View>
-			<Avatar uid={uid} size={48} />
+			<Avatar uid={uid} size={48} enableMenu={enableMenu} />
 		</Pressable>
 	);
 };

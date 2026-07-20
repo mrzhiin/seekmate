@@ -31,9 +31,11 @@ type PostOriginalData = ReturnType<typeof usePostOriginalQuery>["data"];
 export const Original = ({
 	data,
 	postId,
+	onAvatarPress,
 }: {
 	postId: number;
 	data: PostPageData;
+	onAvatarPress?: () => void;
 }) => {
 	const { t } = useTranslation();
 	const [dateDisplay, timeDisplay, relativeDisplay] = useMemo(() => {
@@ -53,7 +55,13 @@ export const Original = ({
 				{data.title}
 			</Text>
 			<View className="pl-4 pr-2 flex-row items-center gap-3">
-				<Avatar uid={data.author.uid} size={40} showRank />
+				<Avatar
+					uid={data.author.uid}
+					size={40}
+					showRank
+					enableMenu={false}
+					onPress={onAvatarPress}
+				/>
 				<View className="flex-1 items-center flex-row gap-x-2 gap-y-1 flex-wrap">
 					<Text className="text-base"> {data.author.name}</Text>
 					<View className="rounded-2xl px-2 py-1 bg-primary justify-center items-center">

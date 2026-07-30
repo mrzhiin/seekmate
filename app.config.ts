@@ -4,7 +4,11 @@ import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
 const VersionCode = 15;
-const abis = ["armeabi-v7a", "arm64-v8a", "x86_64"];
+const abis =
+	typeof process.env.APP_RELEASE_ABIS === "string" &&
+	process.env.APP_RELEASE_ABIS.length
+		? process.env.APP_RELEASE_ABIS.split(",").map((x) => x.trim())
+		: ["armeabi-v7a", "arm64-v8a", "x86_64"];
 
 const config = ({ config }: ConfigContext): ExpoConfig => {
 	const extra = v.parse(ExpoExtraSchema, {

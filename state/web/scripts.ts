@@ -78,6 +78,56 @@ return {
 `;
 };
 
+export const createPostScript = (payload: {
+	content: string;
+	title: string;
+	category: string;
+	mode: "new-discussion";
+	rank: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 255 | number;
+}) => {
+	const url = new URL(
+		"api/content/new-discussion",
+		config.apiBaseUrl,
+	).toString();
+	const t = generateRandomString(16);
+
+	return `
+const data = ${JSON.stringify(payload)};
+const res = await fetch(
+	"${url}",
+	{
+		method: "POST",
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json",
+			"csrf-token": "${t}"
+		},
+	},
+);
+
+let body = null;
+try {
+	body = await res.json();
+} catch (_) {
+	body = null;
+}
+
+if (!res.ok) {
+	throw new Error(
+		JSON.stringify({
+			status: res.status,
+			body,
+		}),
+	);
+}
+
+return {
+	status: res.status,
+	body,
+};
+`;
+};
+
 export const createCollectionScript = (payload: {
 	postId: number;
 	action: "remove" | "add";

@@ -477,7 +477,6 @@ export const PostView = ({
 					}}
 					renderScrollComponent={memoList}
 				/>
-				<AvatarMenu ref={avatarMenuRef} uid={currentAvatarUid} />
 				{userId ? (
 					<KeyboardStickyView
 						style={{
@@ -499,6 +498,7 @@ export const PostView = ({
 					</KeyboardStickyView>
 				) : null}
 			</KeyboardGestureArea>
+			<AvatarMenu ref={avatarMenuRef} uid={currentAvatarUid} />
 			<TrueSheetMenu
 				ref={trueSheetRef}
 				menus={[

@@ -1,14 +1,18 @@
-import * as Linking from "expo-linking";
-import { type SerializedLexicalNode, TextNode } from "lexical";
-import { memo, useCallback, useContext, useMemo } from "react";
-import { Text as RNText, View } from "react-native";
-import * as v from "valibot";
-import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
-import { config } from "../config";
-import { NodeContext } from "./context";
+import type { SerializedLexicalNode } from "lexical";
+import { useMemo } from "react";
+import { CodeRenderer } from "./nodes/codeRenderer";
+import { HeadingRenderer } from "./nodes/headingRenderer";
 import { ImageRenderer } from "./nodes/imageRenderer";
+import { LineBreakRenderer } from "./nodes/lineBreakRenderer";
+import { LinkRenderer } from "./nodes/linkRenderer";
+import { ListItemRenderer } from "./nodes/listItemRenderer";
+import { ListRenderer } from "./nodes/listRenderer";
+import { ParagraphRenderer } from "./nodes/paragraphRenderer";
+import { QuoteRenderer } from "./nodes/quoteRenderer";
+import { RootRenderer } from "./nodes/rootRenderer";
 import { TabsRenderer } from "./nodes/tabsRenderer";
 import { TextRenderer } from "./nodes/textRenderer";
+import { TextsRenderer } from "./nodes/textsRenderer";
 import {
 	type ExtractFromPredicate,
 	isCodeNode,
@@ -25,7 +29,10 @@ import {
 	isTextNode,
 } from "./types";
 
-type TextGroup = (
+export { HeadingRenderer } from "./nodes/headingRenderer";
+export { TextsRenderer } from "./nodes/textsRenderer";
+
+export type TextGroup = (
 	| ExtractFromPredicate<isTextNode>
 	| ExtractFromPredicate<isLinkNode>
 	| ExtractFromPredicate<isLineBreakNode>
@@ -122,203 +129,3 @@ export const NodeRenderer = ({ node }: { node: SerializedLexicalNode }) => {
 	}
 	return null;
 };
-
-const RootRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isRootNode> }) => {
-		return useRenderNodeChildren(node.children);
-	},
-);
-
-const ParagraphRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isParagraphNode> }) => {
-		return <View className="py-2">{useRenderNodeChildren(node.children)}</View>;
-	},
-);
-
-export const HeadingRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isHeadingNode> }) => {
-		const nodeContext = useContext(NodeContext);
-		const value = useMemo(() => {
-			let c = "";
-
-			switch (node.tag) {
-				case "h1":
-					c = "text-3xl";
-					break;
-				case "h2":
-					c = "text-2xl";
-					break;
-				case "h3":
-					c = "text-xl";
-					break;
-				case "h4":
-					c = "text-lg";
-					break;
-				default:
-					break;
-			}
-
-			return {
-				...nodeContext,
-				textClassName: `${nodeContext.textClassName} ${c}`.trim(),
-			};
-		}, [nodeContext, node.tag]);
-
-		return (
-			<NodeContext.Provider value={value}>
-				<RNText className="my-2 pl-2 border-l-2 border-primary" selectable>
-					{useRenderNodeChildren(node.children)}
-				</RNText>
-			</NodeContext.Provider>
-		);
-	},
-);
-
-export const TextsRenderer = memo(({ nodes }: { nodes: TextGroup }) => {
-	return (
-		<RNText selectable>
-			{nodes.map((node, index) => {
-				const key = `${index}`;
-				return <NodeRenderer key={key} node={node} />;
-			})}
-		</RNText>
-	);
-});
-
-const LinkRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isLinkNode> }) => {
-		const nodeContext = useContext(NodeContext);
-		const value = useMemo(
-			() => ({
-				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-primary`,
-			}),
-			[nodeContext],
-		);
-
-		const onPress = useCallback(() => {
-			const r = v.safeParse(
-				v.pipe(v.string(), v.nonEmpty(), v.url()),
-				node.url,
-			);
-
-			let url: string;
-
-			if (r.success) {
-				url = node.url;
-			} else {
-				url = new URL(node.url, config.apiBaseUrl).toString();
-			}
-
-			Linking.openURL(url);
-		}, [node.url]);
-
-		return (
-			<NodeContext.Provider value={value}>
-				<RNText onPress={onPress} selectable>
-					{useRenderNodeChildren(node.children)}
-				</RNText>
-			</NodeContext.Provider>
-		);
-	},
-);
-
-const ListRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isListNode> }) => {
-		const nodeContext = useContext(NodeContext);
-		const value = useMemo(
-			() => ({
-				...nodeContext,
-				listType: node.listType,
-			}),
-			[nodeContext, node.listType],
-		);
-
-		return (
-			<NodeContext.Provider value={value}>
-				<View className="gap-2">{useRenderNodeChildren(node.children)}</View>
-			</NodeContext.Provider>
-		);
-	},
-);
-
-const ListItemRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isListItemNode> }) => {
-		const nodeContext = useContext(NodeContext);
-
-		return (
-			<View className="flex-row gap-2 pl-4">
-				{node.children[0]?.type === TextNode.getType() ? (
-					<RNText className={`${nodeContext.textClassName}`} selectable>
-						{nodeContext.listType === "bullet" ? (
-							<MaterialDesignIcons name="circle-medium" size={14} />
-						) : (
-							`${node.value}.`
-						)}
-					</RNText>
-				) : null}
-				<View className="flex-1">{useRenderNodeChildren(node.children)}</View>
-			</View>
-		);
-	},
-);
-
-const LineBreakRenderer = memo(() => {
-	return <RNText selectable>{"\n"}</RNText>;
-});
-
-const QuoteRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isQuoteNode> }) => {
-		const nodeContext = useContext(NodeContext);
-		const value = useMemo(
-			() => ({
-				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-muted-foreground`,
-			}),
-			[nodeContext],
-		);
-
-		return (
-			<NodeContext.Provider value={value}>
-				<View className="my-2 p-2 rounded-xl bg-muted gap-0.5">
-					<View>
-						<MaterialDesignIcons
-							name="format-quote-open"
-							size={16}
-							className="text-muted-foreground"
-						/>
-					</View>
-					{useRenderNodeChildren(node.children)}
-					<View className="items-end">
-						<MaterialDesignIcons
-							name="format-quote-close"
-							size={16}
-							className="text-muted-foreground"
-						/>
-					</View>
-				</View>
-			</NodeContext.Provider>
-		);
-	},
-);
-
-const CodeRenderer = memo(
-	({ node }: { node: ExtractFromPredicate<isQuoteNode> }) => {
-		const nodeContext = useContext(NodeContext);
-		const value = useMemo(
-			() => ({
-				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-slate-300`,
-			}),
-			[nodeContext],
-		);
-
-		return (
-			<NodeContext.Provider value={value}>
-				<RNText className="my-2 p-2 rounded-xl bg-slate-600" selectable>
-					{useRenderNodeChildren(node.children)}
-				</RNText>
-			</NodeContext.Provider>
-		);
-	},
-);

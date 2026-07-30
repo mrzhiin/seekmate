@@ -1,3 +1,5 @@
+import { FloatingActionButton, Host, Icon } from "@expo/ui/jetpack-compose";
+import RNMaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import { Header } from "@react-navigation/elements";
 import {
 	createMaterialTopTabNavigator,
@@ -7,13 +9,16 @@ import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
+import { useResolveClassNames } from "uniwind";
 import { useStore } from "zustand";
 import { PostList } from "@/components/post/postList";
 import { Pressable } from "@/components/pressable";
 import { TrueSheetMenu } from "@/components/trueSheet";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
+import { useCSSVariableString } from "@/hooks/useStyle";
 import { ScreenName } from "@/stack/screenName";
 import { CategoriesStore } from "@/store/categoriesStore";
+import { userStore } from "@/store/userStore";
 
 type HomeTabParams = Record<string, { category?: string } | undefined>;
 
@@ -31,6 +36,11 @@ const CategoryPostsScreen = ({ route }: CategoryPostsScreenProps) => {
 	return <PostList category={category} />;
 };
 
+const fabIconSource = RNMaterialDesignIcons.getImageSourceSync(
+	"note-plus-outline",
+	24,
+);
+
 const PostsSortByReplyTime = () => {
 	return <PostList sortBy="replyTime" />;
 };
@@ -42,6 +52,12 @@ const Screen = () => {
 	const unpinCategory = useStore(CategoriesStore, (s) => s.unpinCategory);
 	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);
 	const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+	const fabHostStyle = useResolveClassNames("absolute bottom-6 right-6");
+	const primaryColor = useCSSVariableString("--color-primary");
+	const primaryForegroundColor = useCSSVariableString(
+		"--color-primary-foreground",
+	);
+	const userId = useStore(userStore, (s) => s.id);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
@@ -55,6 +71,7 @@ const Screen = () => {
 				top: false,
 				bottom: true,
 			}}
+			className=""
 		>
 			<Header
 				title={t("common.appName")}
@@ -121,6 +138,24 @@ const Screen = () => {
 					);
 				})}
 			</Tab.Navigator>
+			{userId ? (
+				<Host matchContents pointerEvents="box-only" style={fabHostStyle}>
+					<FloatingActionButton
+						containerColor={primaryColor}
+						onClick={() => {
+							navigation.navigate(ScreenName.PostNew);
+						}}
+					>
+						<FloatingActionButton.Icon>
+							<Icon
+								source={{ uri: fabIconSource.uri }}
+								size={24}
+								tint={primaryForegroundColor}
+							/>
+						</FloatingActionButton.Icon>
+					</FloatingActionButton>
+				</Host>
+			) : null}
 			<TrueSheetMenu
 				ref={trueSheetMenuRef}
 				menus={[

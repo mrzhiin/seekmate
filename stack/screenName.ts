@@ -7,6 +7,7 @@ export const ScreenName = {
 	Settings: "Settings",
 	Post: "Post",
 	Posts: "Posts",
+	PostNew: "PostNew",
 	WebView: "WebView",
 	Signin: "Signin",
 	Authenticate: "Authenticate",

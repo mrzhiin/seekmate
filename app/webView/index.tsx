@@ -58,8 +58,6 @@ const Screen = ({ route }: Props) => {
 				) {
 					e.preventDefault();
 					webViewRef.current?.goBack();
-				} else {
-					navigation.dispatch(e.data.action);
 				}
 			};
 

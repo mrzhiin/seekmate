@@ -4,6 +4,7 @@ import AuthenticateScreen from "@/app/authenticate";
 import CategoriesSortScreen from "@/app/categoriesSort";
 import PostsScreen from "@/app/posts";
 import PostScreen from "@/app/posts/[id]";
+import PostNewScreen from "@/app/posts/new";
 import SearchScreen from "@/app/search";
 import SettingsScreen from "@/app/settings";
 import SigninScreen from "@/app/singin";
@@ -34,6 +35,7 @@ export const ScreenOrder = [
 	ScreenName.Settings,
 	ScreenName.Post,
 	ScreenName.Posts,
+	ScreenName.PostNew,
 	ScreenName.WebView,
 	ScreenName.Signin,
 	ScreenName.Authenticate,
@@ -59,4 +61,5 @@ export const Screens: { [Name in RootScreenName]: Entry<Name> } = screens({
 	[ScreenName.Authenticate]: screen(AuthenticateScreen),
 	[ScreenName.Search]: screen(SearchScreen),
 	[ScreenName.CategoriesSort]: screen(CategoriesSortScreen),
+	[ScreenName.PostNew]: screen(PostNewScreen),
 });

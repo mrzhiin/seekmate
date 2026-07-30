@@ -147,8 +147,10 @@ export const parseMarkdownSegments = (
 // LINK's importRegExp would match [alt](url) in ![alt](url) and consume it first
 export const IMAGE: TextMatchTransformer = {
 	dependencies: [ImageNode],
-	export: (_node, _exportChildren) => {
-		return null;
+	export: (node) => {
+		if (!(node instanceof ImageNode)) return null;
+
+		return `![${node.getAltText()}](${node.getSrc()})`;
 	},
 	importRegExp: /!\[([^\]]*)\]\(([^)]+)\)/,
 	regExp: /!\[([^\]]*)\]\(([^)]+)\)/,

@@ -82,6 +82,40 @@
 		}
 	},
 	"post": {
+		"new": {
+			"publish": "Publish",
+			"publishing": "Publishing",
+			"success": "Published successfully",
+			"failed": "Failed to publish",
+			"formError": "Form error",
+			"category": {
+				"placeholder": "Select category"
+			},
+			"visibility": {
+				"label": "Reading access",
+				"public": "Public",
+				"private": "Private"
+			},
+			"validation": {
+				"readingPermission": "Please select reading access",
+				"category": "Please select a category",
+				"title": "Please enter a title"
+			}
+		},
+		"editor": {
+			"toolbar": {
+				"heading2": "Heading 2",
+				"heading3": "Heading 3",
+				"paragraph": "Paragraph",
+				"bold": "Bold",
+				"italic": "Italic",
+				"bulletedList": "Bulleted list",
+				"undo": "Undo",
+				"redo": "Redo"
+			},
+			"placeholder": "Enter content...",
+			"title": "Title"
+		},
 		"original": {
 			"poster": "Original poster"
 		},

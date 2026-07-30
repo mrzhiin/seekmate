@@ -5,7 +5,10 @@ import {
 import type { MaterialDesignIconsIconName } from "@react-native-vector-icons/material-design-icons";
 import type { Ref } from "react";
 import { View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+	GestureHandlerRootView,
+	ScrollView,
+} from "react-native-gesture-handler";
 import { useResolveClassNames } from "uniwind";
 import { Pressable } from "../pressable";
 import { MaterialDesignIcons } from "../ui/materialDesignIcons";
@@ -59,31 +62,39 @@ export const TrueSheetMenu = ({
 					flexGrow: 1,
 				}}
 			>
-				<View className="pt-8 pb-6">
-					{children}
-					{menus.map((x) => {
-						return (
-							<Pressable
-								key={x.key}
-								className="flex-row items-center gap-4 py-3.5 px-6"
-								onPress={x.onPress}
-							>
-								{x.icon && (
-									<MaterialDesignIcons
-										name={x.icon}
-										size={24}
-										className={
-											x.checked ? "text-primary" : "text-secondary-foreground"
-										}
-									/>
-								)}
-								<Text className="text-base text-secondary-foreground">
-									{x.label}
-								</Text>
-							</Pressable>
-						);
-					})}
-				</View>
+				<ScrollView
+					style={{
+						flexGrow: 0,
+						flexShrink: 1,
+					}}
+					showsVerticalScrollIndicator={false}
+				>
+					<View className="pt-8 pb-6">
+						{children}
+						{menus.map((x) => {
+							return (
+								<Pressable
+									key={x.key}
+									className="flex-row items-center gap-4 py-3.5 px-6"
+									onPress={x.onPress}
+								>
+									{x.icon && (
+										<MaterialDesignIcons
+											name={x.icon}
+											size={24}
+											className={
+												x.checked ? "text-primary" : "text-secondary-foreground"
+											}
+										/>
+									)}
+									<Text className="text-base text-secondary-foreground">
+										{x.label}
+									</Text>
+								</Pressable>
+							);
+						})}
+					</View>
+				</ScrollView>
 			</GestureHandlerRootView>
 		</TrueSheet>
 	);

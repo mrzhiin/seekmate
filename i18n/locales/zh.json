@@ -82,6 +82,40 @@
 		}
 	},
 	"post": {
+		"new": {
+			"publish": "发布",
+			"publishing": "发布中",
+			"success": "发布成功",
+			"failed": "发布失败",
+			"formError": "表单错误",
+			"category": {
+				"placeholder": "选择板块"
+			},
+			"visibility": {
+				"label": "阅读限制",
+				"public": "公开",
+				"private": "私有"
+			},
+			"validation": {
+				"readingPermission": "请选择阅读权限",
+				"category": "请选择板块",
+				"title": "请输入标题"
+			}
+		},
+		"editor": {
+			"toolbar": {
+				"heading2": "二级标题",
+				"heading3": "三级标题",
+				"paragraph": "段落",
+				"bold": "粗体",
+				"italic": "斜体",
+				"bulletedList": "项目符号列表",
+				"undo": "撤销",
+				"redo": "重做"
+			},
+			"placeholder": "请输入内容...",
+			"title": "标题"
+		},
 		"original": {
 			"poster": "楼主"
 		},

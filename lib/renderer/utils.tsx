@@ -1,7 +1,11 @@
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
-import { $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+import {
+	$convertFromMarkdownString,
+	$convertToMarkdownString,
+	TRANSFORMERS,
+} from "@lexical/markdown";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import {
 	createEditor,
@@ -48,6 +52,54 @@ const convertStandardMarkdownToState = (
 	return editor.getEditorState().toJSON();
 };
 
+const convertChildrenToMarkdown = (
+	children: SerializedLexicalNode[],
+	state: SerializedEditorState,
+): string => {
+	const segments: string[] = [];
+	let standardChildren: SerializedLexicalNode[] = [];
+
+	const flushStandardChildren = () => {
+		if (standardChildren.length === 0) return;
+
+		const editor = createMarkdownEditor();
+		const temporaryState = editor.parseEditorState({
+			...state,
+			root: {
+				...state.root,
+				children: standardChildren,
+			},
+		});
+		editor.setEditorState(temporaryState);
+		segments.push(
+			editor
+				.getEditorState()
+				.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS)),
+		);
+		standardChildren = [];
+	};
+
+	for (const child of children) {
+		if (child.type !== "tabs") {
+			standardChildren.push(child);
+			continue;
+		}
+
+		flushStandardChildren();
+		const tabsNode = child as SerializedTabsNode;
+		const tabs = tabsNode.tabs
+			.map((tab) => {
+				const content = convertChildrenToMarkdown(tab.children, state);
+				return `::: tab-item ${tab.title}\n${content}\n:::`;
+			})
+			.join("\n");
+		segments.push(`:::: tabs\n${tabs}\n::::`);
+	}
+
+	flushStandardChildren();
+	return segments.join("\n\n");
+};
+
 export const convertFromMarkdownToState = (markdown: string) => {
 	const segments = parseMarkdownSegments(markdown);
 	const state = convertStandardMarkdownToState("");
@@ -79,3 +131,7 @@ export const convertFromMarkdownToState = (markdown: string) => {
 
 	return state;
 };
+
+export const convertFromStateToMarkdown = (
+	state: SerializedEditorState,
+): string => convertChildrenToMarkdown(state.root.children, state);

@@ -3,7 +3,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
-const VersionCode = 15;
+const VersionCode = 16;
 const abis =
 	typeof process.env.APP_RELEASE_ABIS === "string" &&
 	process.env.APP_RELEASE_ABIS.length

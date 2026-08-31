@@ -57,6 +57,7 @@ jobs:
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
       #
       APP_RELEASE_STORE_FILE: "release.keystore"
+      APP_ANDROID_BUILD_TARGET: "apk"
       APP_GOOGLE_SERVICES_FILE: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' && 'google-services.json' || '' }}
       APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED: ${{ vars.APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED }}
 
@@ -157,6 +158,7 @@ jobs:
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
       #
       APP_RELEASE_STORE_FILE: "release.keystore"
+      APP_ANDROID_BUILD_TARGET: "aab"
       APP_GOOGLE_SERVICES_FILE: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' && 'google-services.json' || '' }}
       APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED: ${{ vars.APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED }}
 

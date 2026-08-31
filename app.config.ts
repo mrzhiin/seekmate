@@ -17,6 +17,7 @@ const abis =
 
 const releaseOptimizationEnabled =
 	process.env.APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED === "true";
+const androidAbiSplitsEnabled = process.env.APP_ANDROID_BUILD_TARGET !== "aab";
 
 const config = ({ config }: ConfigContext): ExpoConfig => {
 	const extra = v.parse(ExpoExtraSchema, {
@@ -38,7 +39,6 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 				},
 			},
 		],
-		["./plugins/withAndroidAbiSplits.ts", { abis, universalApk: true }],
 		["expo-image", {}],
 		[
 			"expo-splash-screen",
@@ -66,6 +66,13 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 			},
 		],
 	];
+
+	if (androidAbiSplitsEnabled) {
+		plugins.push([
+			"./plugins/withAndroidAbiSplits.ts",
+			{ abis, universalApk: true },
+		]);
+	}
 
 	if (
 		process.env.APP_RELEASE_STORE_FILE &&

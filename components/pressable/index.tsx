@@ -1,8 +1,8 @@
-import { Platform } from "react-native";
 import {
+	Platform,
 	type PressableProps,
-	Pressable as RNGPressable,
-} from "react-native-gesture-handler";
+	Pressable as RNPressable,
+} from "react-native";
 import { useResolveClassNames } from "uniwind";
 
 export const AndroidRipple = {
@@ -19,7 +19,7 @@ export const Pressable = ({
 	const styles = useResolveClassNames(className || "");
 
 	return (
-		<RNGPressable
+		<RNPressable
 			android_ripple={{
 				...AndroidRipple,
 				...android_ripple,
@@ -34,6 +34,6 @@ export const Pressable = ({
 			{...props}
 		>
 			{children}
-		</RNGPressable>
+		</RNPressable>
 	);
 };

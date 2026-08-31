@@ -1,5 +1,10 @@
 import "tsx/cjs";
 import type { ConfigContext, ExpoConfig } from "expo/config";
+import {
+	type ConfigPlugin,
+	type StaticPlugin,
+	withPlugins,
+} from "expo/config-plugins";
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
@@ -18,18 +23,20 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 		sentryDsn: process.env.APP_PUBLIC_SENTRY_DSN,
 	});
 
-	const plugins: ExpoConfig["plugins"] = [
-		["expo-dev-client"],
+	const plugins: (StaticPlugin | ConfigPlugin | string)[] = [
+		["expo-dev-client", {}],
 		[
 			"expo-build-properties",
 			{
 				android: {
 					buildArchs: abis,
+					enableMinifyInReleaseBuilds: true,
+					enableShrinkResourcesInReleaseBuilds: true,
 				},
 			},
 		],
 		["./plugins/withAndroidAbiSplits.ts", { abis, universalApk: true }],
-		["expo-image"],
+		["expo-image", {}],
 		[
 			"expo-splash-screen",
 			{
@@ -89,23 +96,25 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 		]);
 	}
 
-	return {
-		...config,
-		name: "SeekMate",
-		slug: "seekmate",
-		platforms: ["android"],
-		userInterfaceStyle: "automatic",
-		icon: "./assets/app/adaptive-icon.png",
-		android: {
-			package: "com.angiin.seekmate",
-			versionCode: VersionCode,
+	return withPlugins(
+		{
+			...config,
+			name: "SeekMate",
+			slug: "seekmate",
+			platforms: ["android"],
+			userInterfaceStyle: "automatic",
+			icon: "./assets/app/adaptive-icon.png",
+			android: {
+				package: "com.angiin.seekmate",
+				versionCode: VersionCode,
+			},
+			extra,
+			updates: {
+				enabled: false,
+			},
 		},
 		plugins,
-		extra,
-		updates: {
-			enabled: false,
-		},
-	};
+	);
 };
 
 export default config;

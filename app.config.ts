@@ -15,6 +15,9 @@ const abis =
 		? process.env.APP_RELEASE_ABIS.split(",").map((x) => x.trim())
 		: ["armeabi-v7a", "arm64-v8a", "x86_64"];
 
+const releaseOptimizationEnabled =
+	process.env.APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED === "true";
+
 const config = ({ config }: ConfigContext): ExpoConfig => {
 	const extra = v.parse(ExpoExtraSchema, {
 		apiBaseUrl: process.env.APP_PUBLIC_API_BASEURL,
@@ -30,8 +33,8 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 			{
 				android: {
 					buildArchs: abis,
-					enableMinifyInReleaseBuilds: true,
-					enableShrinkResourcesInReleaseBuilds: true,
+					enableMinifyInReleaseBuilds: releaseOptimizationEnabled,
+					enableShrinkResourcesInReleaseBuilds: releaseOptimizationEnabled,
 				},
 			},
 		],
@@ -107,6 +110,7 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 			android: {
 				package: "com.angiin.seekmate",
 				versionCode: VersionCode,
+				googleServicesFile: process.env.APP_GOOGLE_SERVICES_FILE || undefined,
 			},
 			extra,
 			updates: {

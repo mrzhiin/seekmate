@@ -41,8 +41,8 @@ jobs:
 
             core.setOutput('is_semver_prerelease', String(isSemverPrerelease))
 
-  build:
-    name: Build APK/AAB
+  build-apk:
+    name: Build APK
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -57,9 +57,8 @@ jobs:
       APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
       #
       APP_RELEASE_STORE_FILE: "release.keystore"
-      #
-      HAS_ANDROID_KEYSTORE: ${{ secrets.APP_RELEASE_STORE_BASE64 != '' }}
-      HAS_GOOGLE_SERVICES: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' }}
+      APP_GOOGLE_SERVICES_FILE: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' && 'google-services.json' || '' }}
+      APP_ANDROID_RELEASE_OPTIMIZATION_ENABLED: "true"
 
     steps:
       - name: Checkout repository
@@ -79,21 +78,31 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Restore Android keystore
-        if: ${{ env.HAS_ANDROID_KEYSTORE == 'true' }}
+      - name: Validate and restore Android keystore
         shell: bash
+        env:
+          APP_RELEASE_STORE_BASE64: ${{ secrets.APP_RELEASE_STORE_BASE64 }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          : "${APP_RELEASE_STORE_BASE64:?Missing GitHub secret APP_RELEASE_STORE_BASE64}"
+          : "${APP_RELEASE_STORE_PASSWORD:?Missing GitHub secret APP_RELEASE_STORE_PASSWORD}"
+          : "${APP_RELEASE_KEY_ALIAS:?Missing GitHub secret APP_RELEASE_KEY_ALIAS}"
+          : "${APP_RELEASE_KEY_PASSWORD:?Missing GitHub secret APP_RELEASE_KEY_PASSWORD}"
           umask 077
-          printf '%s' '${{ secrets.APP_RELEASE_STORE_BASE64 }}' | base64 --decode > ${{ env.APP_RELEASE_STORE_FILE }}
+          printf '%s' "$APP_RELEASE_STORE_BASE64" | base64 --decode > "$APP_RELEASE_STORE_FILE"
 
       - name: Restore GoogleServices
-        if: ${{ env.HAS_GOOGLE_SERVICES == 'true' }}
+        if: ${{ env.APP_GOOGLE_SERVICES_FILE != '' }}
         shell: bash
+        env:
+          APP_GOOGLE_SERVICES_BASE64: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 }}
         run: |
           set -euo pipefail
           umask 077
-          printf '%s' '${{ secrets.APP_GOOGLE_SERVICES_BASE64 }}' | base64 --decode > ${{ env.APP_GOOGLE_SERVICES_FILE }}
+          printf '%s' "$APP_GOOGLE_SERVICES_BASE64" | base64 --decode > "$APP_GOOGLE_SERVICES_FILE"
 
       - name: Prebuild Android project
         run: pnpm run prebuild
@@ -101,6 +110,9 @@ jobs:
           APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
           APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
           APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -108,16 +120,6 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: gradle
-
-      - name: Build Android AAB
-        run: pnpm run build
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
-          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
-          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
-          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
 
       - name: Build Android APK
         run: pnpm run build:apk
@@ -139,6 +141,95 @@ jobs:
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
+  build-aab:
+    name: Build AAB
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    env:
+      EXPO_NO_DOTENV: "1"
+      EXPO_NO_CLIENT_ENV_VARS: "1"
+      #
+      APP_PUBLIC_SENTRY_DSN: ${{ vars.APP_PUBLIC_SENTRY_DSN }}
+      APP_PUBLIC_API_BASEURL: ${{ vars.APP_PUBLIC_API_BASEURL }}
+      APP_PUBLIC_SITE_URL: ${{ vars.APP_PUBLIC_SITE_URL }}
+      APP_PUBLIC_GITHUB_URL: ${{ vars.APP_PUBLIC_GITHUB_URL }}
+      #
+      APP_RELEASE_STORE_FILE: "release.keystore"
+      APP_GOOGLE_SERVICES_FILE: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 != '' && 'google-services.json' || '' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate and restore Android keystore
+        shell: bash
+        env:
+          APP_RELEASE_STORE_BASE64: ${{ secrets.APP_RELEASE_STORE_BASE64 }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${APP_RELEASE_STORE_BASE64:?Missing GitHub secret APP_RELEASE_STORE_BASE64}"
+          : "${APP_RELEASE_STORE_PASSWORD:?Missing GitHub secret APP_RELEASE_STORE_PASSWORD}"
+          : "${APP_RELEASE_KEY_ALIAS:?Missing GitHub secret APP_RELEASE_KEY_ALIAS}"
+          : "${APP_RELEASE_KEY_PASSWORD:?Missing GitHub secret APP_RELEASE_KEY_PASSWORD}"
+          umask 077
+          printf '%s' "$APP_RELEASE_STORE_BASE64" | base64 --decode > "$APP_RELEASE_STORE_FILE"
+
+      - name: Restore GoogleServices
+        if: ${{ env.APP_GOOGLE_SERVICES_FILE != '' }}
+        shell: bash
+        env:
+          APP_GOOGLE_SERVICES_BASE64: ${{ secrets.APP_GOOGLE_SERVICES_BASE64 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$APP_GOOGLE_SERVICES_BASE64" | base64 --decode > "$APP_GOOGLE_SERVICES_FILE"
+
+      - name: Prebuild Android project
+        run: pnpm run prebuild
+        env:
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Build Android AAB
+        run: pnpm run build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORGANIZATION: ${{ secrets.SENTRY_ORGANIZATION }}
+          APP_RELEASE_STORE_PASSWORD: ${{ secrets.APP_RELEASE_STORE_PASSWORD }}
+          APP_RELEASE_KEY_ALIAS: ${{ secrets.APP_RELEASE_KEY_ALIAS }}
+          APP_RELEASE_KEY_PASSWORD: ${{ secrets.APP_RELEASE_KEY_PASSWORD }}
+
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v7
         with:
@@ -151,7 +242,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs:
-      - build
+      - build-apk
+      - build-aab
       - resolve-release
     permissions:
       contents: write
@@ -164,12 +256,6 @@ jobs:
         with:
           name: android-release-apk
           path: release-assets/apk
-
-      - name: Download AAB artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: android-release-aab
-          path: release-assets/aab
 
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v3

@@ -39,6 +39,12 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 				},
 			},
 		],
+		[
+			"./plugins/withGradleJvmArgs.ts",
+			{
+				value: "-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8",
+			},
+		],
 		["expo-image", {}],
 		[
 			"expo-splash-screen",

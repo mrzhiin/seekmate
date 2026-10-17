@@ -31,7 +31,7 @@ export const AutoCheckIn = () => {
 				}
 			})
 			.then((res) => {
-				if (res) {
+				if (res && !cancelled) {
 					if (res.success) {
 						queryClient.invalidateQueries({
 							queryKey: getAttendanceQueryOptions(userId).queryKey,
@@ -40,6 +40,11 @@ export const AutoCheckIn = () => {
 					} else {
 						ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);
 					}
+				}
+			})
+			.catch(() => {
+				if (!cancelled) {
+					ToastAndroid.show(t("mine.attendance.failed"), ToastAndroid.SHORT);
 				}
 			});
 

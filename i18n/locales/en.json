@@ -7,6 +7,8 @@
 	},
 	"auth": {
 		"title": "Log in",
+		"signingIn": "Logging",
+		"userDataFailed": "Could not load account data. Login was not completed. Please retry.",
 		"signInPrompt": {
 			"welcome": "Welcome",
 			"description": "Let's get started",
@@ -69,6 +71,12 @@
 			"label": "Check-in method",
 			"fixed": "Fixed",
 			"random": "Random"
+		},
+		"nodeImageApiKey": {
+			"label": "NodeImage API Key",
+			"description": "NodeSeek Image Hosting",
+			"configured": "Configured. Tap to edit or clear.",
+			"required": "Please configure your NodeImage API Key in settings first"
 		},
 		"locale": "Language",
 		"clearImageCache": {

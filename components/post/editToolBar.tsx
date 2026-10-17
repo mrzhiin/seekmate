@@ -31,7 +31,7 @@ const ToolbarButton = ({
 	<Pressable
 		accessibilityLabel={label}
 		accessibilityRole="button"
-		className="rounded-full justify-center items-center h-9 w-9"
+		className="rounded-full justify-center items-center h-10 w-10"
 		hitSlop={4}
 		onPress={onPress}
 	>
@@ -47,7 +47,7 @@ export const EditToolBar = ({
 	onBoldPress,
 	onItalicPress,
 	onBulletedListPress,
-	// onImagePress,
+	onImagePress,
 }: EditToolBarProps) => {
 	const { t } = useTranslation();
 	const boxShadowColor = useCSSVariableString("--color-border");
@@ -66,10 +66,9 @@ export const EditToolBar = ({
 				end={{ x: 0.5, y: 1 }}
 				style={StyleSheet.absoluteFill}
 			/>
-
-			<View className="flex-row justify-between items-center">
+			<View className="flex-row justify-between mx-2 my-1">
 				<View
-					className="bg-secondary flex-row rounded-4xl border border-background m-4 p-1 gap-1"
+					className="bg-secondary flex-row items-center rounded-4xl border border-background overflow-hidden"
 					style={{
 						boxShadow: [
 							{
@@ -115,14 +114,14 @@ export const EditToolBar = ({
 						label={t("post.editor.toolbar.bulletedList")}
 						onPress={onBulletedListPress}
 					/>
-					{/* <ToolbarButton
+					<ToolbarButton
 						icon="image-outline"
 						label="Image"
 						onPress={onImagePress}
-					/> */}
+					/>
 				</View>
 				<View
-					className="bg-secondary flex-row rounded-4xl border border-background m-4 p-1 gap-1"
+					className="bg-secondary flex-row items-center rounded-4xl border border-background overflow-hidden"
 					style={{
 						boxShadow: [
 							{

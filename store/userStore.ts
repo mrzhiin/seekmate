@@ -36,6 +36,7 @@ export const userStore = createStore<State & Action>()(
 		{
 			version: 0,
 			name: StorageKey.ZustandStoreUser,
+			partialize: ({ id, name }) => ({ id, name }),
 			storage: createJSONStorage(() => {
 				return createCustomStorage();
 			}),

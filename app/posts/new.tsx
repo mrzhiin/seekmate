@@ -1,4 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { fetch } from "expo/fetch";
+import { File } from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -8,6 +11,7 @@ import {
 	KeyboardStickyView,
 	useKeyboardState,
 } from "react-native-keyboard-controller";
+import * as v from "valibot";
 import { useStore } from "zustand";
 import Editor, { type EditorRef, type HeadingLevel } from "@/components/editor";
 import { EditToolBar } from "@/components/post/editToolBar";
@@ -21,6 +25,15 @@ import type { ScreenParams } from "@/stack/screenParams";
 import { WebServiceContext } from "@/state/web";
 import { createPostScript } from "@/state/web/scripts";
 import { CategoriesStore } from "@/store/categoriesStore";
+import { userDataStore } from "@/store/userDataStore";
+import { userStore } from "@/store/userStore";
+
+const nodeimageSuccessResponse = v.object({
+	success: v.literal(true),
+	links: v.object({
+		direct: v.pipe(v.string(), v.url(), v.regex(/^https?:\/\//)),
+	}),
+});
 
 const ranks = [
 	{
@@ -56,6 +69,24 @@ const ranks = [
 		value: 255,
 	},
 ];
+
+const pickImage = async () => {
+	const permissionResult =
+		await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+	if (!permissionResult.granted) {
+		return Promise.reject(new Error("Permission required"));
+	}
+
+	const result = await ImagePicker.launchImageLibraryAsync({
+		mediaTypes: ["images"],
+		quality: 1,
+	});
+
+	if (!result.canceled) {
+		return result.assets[0].uri;
+	}
+};
 
 type Props = NativeStackScreenProps<ScreenParams, typeof ScreenName.PostNew>;
 
@@ -144,7 +175,58 @@ const Screen = ({ navigation }: Props) => {
 		editorRef.current?.toggleBulletedList();
 	}, []);
 
-	const handleImagePress = useCallback(() => {}, []);
+	const handleImagePress = useCallback(async () => {
+		const userId = userStore.getState().id;
+		const apiKey = userDataStore.getState().nodeImageApiKey;
+
+		if (userId == null || !apiKey) {
+			ToastAndroid.show(
+				t("settings.nodeImageApiKey.required"),
+				ToastAndroid.LONG,
+			);
+			return;
+		}
+
+		try {
+			const fileUri = await pickImage();
+			if (!fileUri || userStore.getState().id !== userId) return;
+
+			const file = new File(fileUri);
+			const formData = new FormData();
+			formData.append("image", file);
+
+			const response = await fetch("https://api.nodeimage.com/api/upload", {
+				method: "POST",
+				body: formData,
+				headers: {
+					"X-API-Key": apiKey,
+				},
+			});
+
+			if (!response.ok) {
+				throw new Error("Upload failed");
+			}
+
+			const resData = await response.json();
+			const result = v.safeParse(nodeimageSuccessResponse, resData);
+
+			if (!result.success) {
+				throw new Error("Invalid upload response");
+			}
+
+			if (userStore.getState().id !== userId) return;
+
+			editorRef.current?.insertNodes([
+				{
+					type: "image",
+					src: result.output.links.direct,
+					altText: "",
+				},
+			]);
+		} catch {
+			ToastAndroid.show("Upload failed", ToastAndroid.LONG);
+		}
+	}, [t]);
 
 	const handleUndoPress = useCallback(() => {
 		editorRef.current?.undo();

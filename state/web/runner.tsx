@@ -13,16 +13,23 @@ import type {
 	WebViewErrorEvent,
 	WebViewHttpErrorEvent,
 } from "react-native-webview/lib/WebViewTypes";
+import * as v from "valibot";
 import { config } from "@/lib/config";
 
 const RUN_TIMEOUT_MS = 15_000;
 
-export interface Message {
-	id: string;
-	success: boolean;
-	data?: unknown;
-	error?: string;
-}
+const MessageStringSchema = v.pipe(
+	v.string(),
+	v.parseJson(),
+	v.object({
+		id: v.string(),
+		success: v.boolean(),
+		data: v.optional(v.unknown()),
+		error: v.optional(v.string()),
+	}),
+);
+
+export type Message = v.InferOutput<typeof MessageStringSchema>;
 
 interface PendingEvent {
 	id: string;
@@ -67,7 +74,7 @@ const createScript = (id: string, script: string) => {
 
 export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 	const [isWebview, setIsWebview] = useState(false);
-	const webViewRef = useRef<WebView>(null);
+	const webViewRef = useRef<WebView<unknown>>(null);
 	const queueRef = useRef(
 		new PQueue({
 			autoStart: false,
@@ -89,6 +96,8 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 	}, []);
 
 	const rejectAllPending = useCallback((error: string) => {
+		queueRef.current.pause();
+		queueRef.current.clear();
 		eventMapRef.current.forEach(({ id, reject, timeoutId }) => {
 			clearTimeout(timeoutId);
 			reject({
@@ -106,21 +115,22 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 
 	const handleError = (_event: WebViewErrorEvent) => {
 		rejectAllPending("webview load failed");
+		setIsWebview(false);
 	};
 
 	const handleHttpError = (_event: WebViewHttpErrorEvent) => {
 		rejectAllPending("webview request failed");
+		setIsWebview(false);
 	};
 
 	const handleMessage = (event: WebViewMessageEvent) => {
-		let message: Message;
+		const result = v.safeParse(MessageStringSchema, event.nativeEvent.data);
 
-		try {
-			message = JSON.parse(event.nativeEvent.data) as Message;
-		} catch {
+		if (!result.success) {
 			return;
 		}
 
+		const message = result.output;
 		const pendingEvent = clearPendingEvent(message.id);
 
 		if (pendingEvent) {
@@ -145,7 +155,7 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 
 				const id = `event:${++countRef.current}`;
 
-				return queueRef.current.add(
+				const task = queueRef.current.add(
 					async () => {
 						if (!webViewRef.current) {
 							return Promise.reject({
@@ -192,6 +202,12 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 						id,
 					},
 				);
+
+				return task.catch((error: unknown) => {
+					throw error instanceof Error
+						? { id, success: false, error: error.message }
+						: error;
+				});
 			},
 		};
 	}, [clearPendingEvent]);
@@ -207,12 +223,12 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 			queue.pause();
 		};
 
-		queue.on("add", handleAdd);
-		queue.on("idle", handleIdle);
+		queue.addEventListener("add", handleAdd);
+		queue.addEventListener("idle", handleIdle);
 
 		return () => {
-			queue.off("add", handleAdd);
-			queue.off("idle", handleIdle);
+			queue.removeEventListener("add", handleAdd);
+			queue.removeEventListener("idle", handleIdle);
 		};
 	}, []);
 
@@ -235,7 +251,7 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 				height: 1,
 			}}
 		>
-			<WebView
+			<WebView<unknown>
 				ref={webViewRef}
 				source={{
 					uri: new URL("board", config.siteUrl).toString(),

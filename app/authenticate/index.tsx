@@ -1,13 +1,15 @@
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Alert, Keyboard, View } from "react-native";
 import WebView, {
 	type WebViewMessageEvent,
 	type WebViewNavigation,
 } from "react-native-webview";
 import * as v from "valibot";
+import { Spinner } from "@/components/spinner";
+import { Text } from "@/components/ui/text";
 import { signInUserSession } from "@/lib/auth/session";
 import { config } from "@/lib/config";
 import { ScreenName } from "@/stack/screenName";
@@ -58,16 +60,11 @@ if (UsernameEl) {
 
 const Screen = () => {
 	const navigation = useNavigation<NativeStackNavigationProp<ScreenParams>>();
-	const webViewRef = useRef<WebView>(null);
+	const webViewRef = useRef<WebView<unknown>>(null);
 	const { t } = useTranslation();
-
+	const [isSigningIn, setIsSigningIn] = useState(false);
 	const prevUrlPathnameRef = useRef<string>(null);
-
-	useEffect(() => {
-		navigation.setOptions({
-			title: t("auth.title"),
-		});
-	}, [navigation, t]);
+	const signInControllerRef = useRef<AbortController | null>(null);
 
 	const handleNavigationStateChange = useCallback(
 		(navState: WebViewNavigation) => {
@@ -84,6 +81,48 @@ const Screen = () => {
 		[],
 	);
 
+	useEffect(() => () => signInControllerRef.current?.abort(), []);
+
+	useEffect(() => {
+		navigation.setOptions({
+			title: t("auth.title"),
+		});
+	}, [navigation, t]);
+
+	const completeSignIn = async (userId: number) => {
+		if (signInControllerRef.current) return;
+
+		const controller = new AbortController();
+
+		signInControllerRef.current = controller;
+		Keyboard.dismiss();
+		setIsSigningIn(true);
+
+		try {
+			await signInUserSession(userId, controller.signal);
+			if (!controller.signal.aborted) {
+				navigation.popTo(ScreenName.Tabs);
+			}
+		} catch {
+			if (!controller.signal.aborted) {
+				Alert.alert(t("auth.title"), t("auth.userDataFailed"), [
+					{ text: t("common.cancel"), style: "cancel" },
+					{
+						text: t("common.retry"),
+						onPress: () => {
+							void completeSignIn(userId);
+						},
+					},
+				]);
+			}
+		} finally {
+			signInControllerRef.current = null;
+			if (!controller.signal.aborted) {
+				setIsSigningIn(false);
+			}
+		}
+	};
+
 	const handleMessage = (event: WebViewMessageEvent) => {
 		const result = v.safeParse(
 			MessageSuccessStringSchema,
@@ -91,26 +130,43 @@ const Screen = () => {
 		);
 
 		if (result.success) {
-			signInUserSession(result.output.data.userId);
-
-			navigation.popTo(ScreenName.Tabs);
+			completeSignIn(result.output.data.userId);
 		}
 	};
 
 	return (
 		<View className="flex-1">
-			<WebView
-				ref={webViewRef}
+			<View
 				className="flex-1"
-				showsHorizontalScrollIndicator={false}
-				showsVerticalScrollIndicator={false}
-				source={{
-					uri: SIGNIN_URL,
-				}}
-				onNavigationStateChange={handleNavigationStateChange}
-				onMessage={handleMessage}
-				webviewDebuggingEnabled={false}
-			/>
+				pointerEvents={isSigningIn ? "none" : "auto"}
+				importantForAccessibility={isSigningIn ? "no-hide-descendants" : "auto"}
+			>
+				<WebView<unknown>
+					ref={webViewRef}
+					className="flex-1"
+					showsHorizontalScrollIndicator={false}
+					showsVerticalScrollIndicator={false}
+					source={{
+						uri: SIGNIN_URL,
+					}}
+					onNavigationStateChange={handleNavigationStateChange}
+					onMessage={handleMessage}
+					webviewDebuggingEnabled={false}
+				/>
+			</View>
+			{isSigningIn && (
+				<View
+					className="absolute inset-0 items-center justify-center gap-4 bg-background/80 px-6"
+					accessible
+					accessibilityRole="progressbar"
+					accessibilityLabel={t("auth.signingIn")}
+					accessibilityState={{ busy: true }}
+					accessibilityLiveRegion="polite"
+				>
+					<Spinner />
+					<Text className="text-base text-center">{t("auth.signingIn")}</Text>
+				</View>
+			)}
 		</View>
 	);
 };

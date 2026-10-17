@@ -28,6 +28,7 @@ const config = ({ config }: ConfigContext): ExpoConfig => {
 	});
 
 	const plugins: (StaticPlugin | ConfigPlugin | string)[] = [
+		["expo-image-picker", {}],
 		["expo-dev-client", {}],
 		[
 			"expo-build-properties",

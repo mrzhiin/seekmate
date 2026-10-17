@@ -7,6 +7,8 @@
 	},
 	"auth": {
 		"title": "登录",
+		"signingIn": "正在登录",
+		"userDataFailed": "账号数据查询失败，登录未完成，请重试。",
 		"signInPrompt": {
 			"welcome": "欢迎",
 			"description": "开始使用",
@@ -69,6 +71,12 @@
 			"label": "签到方式",
 			"fixed": "固定",
 			"random": "随机"
+		},
+		"nodeImageApiKey": {
+			"label": "NodeImage API Key",
+			"description": "NodeSeek 专用图床",
+			"configured": "已配置，点按修改或清空",
+			"required": "请先在设置中配置 NodeImage API Key"
 		},
 		"locale": "语言",
 		"clearImageCache": {

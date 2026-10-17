@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { StorageKey } from "@/lib/storage";
-import { createCustomStorage } from "./util";
+import { createCustomStorage } from "@/store/util";
 
 export const CheckInType = {
 	Random: "random",

@@ -4,16 +4,19 @@ import * as Application from "expo-application";
 import { type ReactNode, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
+import { useStore } from "zustand";
 import { Pressable } from "@/components/pressable";
 import { AuthCheckIn } from "@/components/settings/autoCheckIn";
 import { CheckIn } from "@/components/settings/checkIn";
 import { ClearImageCache } from "@/components/settings/clearImageCache";
 import { Link } from "@/components/settings/link";
 import { Locale } from "@/components/settings/locale";
+import { NodeImageApiKey } from "@/components/settings/nodeImageApiKey";
 import { User } from "@/components/settings/user";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { Text } from "@/components/ui/text";
 import { config } from "@/lib/config";
+import { userStore } from "@/store/userStore";
 
 const Label = ({ text }: { text?: string }) => {
 	return <Text className="text-base px-6 py-2">{text}</Text>;
@@ -51,6 +54,7 @@ const Item = ({
 const Screen = () => {
 	const navigation = useNavigation();
 	const { t } = useTranslation();
+	const userId = useStore(userStore, (state) => state.id);
 
 	useEffect(() => {
 		navigation.setOptions({
@@ -67,6 +71,7 @@ const Screen = () => {
 				<User />
 				<AuthCheckIn />
 				<CheckIn />
+				<NodeImageApiKey key={userId} />
 				<ClearImageCache />
 				<Locale />
 				<Label text={t("settings.about")} />

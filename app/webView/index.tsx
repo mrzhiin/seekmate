@@ -19,7 +19,7 @@ type Props = NativeStackScreenProps<ScreenParams, typeof ScreenName.WebView>;
 const Screen = ({ route }: Props) => {
 	const sourceUri = route.params?.uri;
 	const navigation = useNavigation();
-	const webViewRef = useRef<null | WebView>(null);
+	const webViewRef = useRef<WebView<unknown>>(null);
 	const isAllowBackRef = useRef(false);
 
 	const [title, setTitle] = useState("");
@@ -72,7 +72,7 @@ const Screen = ({ route }: Props) => {
 	}
 
 	return (
-		<WebView
+		<WebView<unknown>
 			ref={webViewRef}
 			style={{ flex: 1 }}
 			source={{

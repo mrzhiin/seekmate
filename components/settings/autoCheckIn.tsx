@@ -19,7 +19,10 @@ export const AuthCheckIn = () => {
 			subLabel={t("settings.autoCheckIn.description")}
 			right={
 				<Host matchContents>
-					<Switch value={autoCheckIn} onCheckedChange={toggleAutoCheckIn} />
+					<Switch
+						value={autoCheckIn}
+						onCheckedChange={(value) => update({ autoCheckIn: value })}
+					/>
 				</Host>
 			}
 			onPress={toggleAutoCheckIn}

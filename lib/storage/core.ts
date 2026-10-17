@@ -6,6 +6,7 @@ export const mmkvStorage = createMMKV();
 export const StorageKey = {
 	ZustandStoreUser: "zustand:store:user",
 	ZustandStoreApp: "zustand:store:app",
+	ZustandStoreUserData: "zustand:store:user-data",
 	ZustandStoreCategories: "zustand:store:categories",
 	SearchKeywords: "search:keywords",
 	RecentViewedPosts: "mine:recent-viewed-posts",

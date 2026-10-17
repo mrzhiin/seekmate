@@ -175,21 +175,25 @@ const Editor = ({
 	}, [editor]);
 
 	useEffect(() => {
-		return editor.registerTextContentListener(() => {
-			if (onChange) {
-				onChange(JSON.stringify(editor.getEditorState().toJSON()));
-			}
+		return editor.registerUpdateListener(
+			({ editorState, dirtyElements, dirtyLeaves }) => {
+				if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
 
-			if (onSummaryChange) {
-				let rootTextContent = "";
+				if (onChange) {
+					onChange(JSON.stringify(editorState.toJSON()));
+				}
 
-				editor.read(() => {
-					rootTextContent = $rootTextContent();
-				});
+				if (onSummaryChange) {
+					let rootTextContent = "";
 
-				onSummaryChange(rootTextContent.slice(0, 140));
-			}
-		});
+					editorState.read(() => {
+						rootTextContent = $rootTextContent();
+					});
+
+					onSummaryChange(rootTextContent.slice(0, 140));
+				}
+			},
+		);
 	}, [editor, onChange, onSummaryChange]);
 
 	useDOMImperativeHandle(ref, () => {

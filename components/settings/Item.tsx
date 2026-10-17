@@ -11,13 +11,24 @@ export interface ItemProps {
 	subLabel?: string;
 	onPress?: () => void;
 	right?: ReactNode;
+	disabled?: boolean;
 }
 
-export const Item = ({ icon, label, subLabel, onPress, right }: ItemProps) => {
+export const Item = ({
+	icon,
+	label,
+	subLabel,
+	onPress,
+	right,
+	disabled,
+}: ItemProps) => {
 	return (
 		<Pressable
-			className="flex-row px-6 py-4 gap-4 items-center"
+			className={`flex-row px-6 py-4 gap-4 items-center ${disabled ? "opacity-50" : ""}`}
 			onPress={onPress}
+			disabled={disabled}
+			accessibilityRole={onPress ? "button" : undefined}
+			accessibilityState={{ disabled }}
 		>
 			{icon && <MaterialDesignIcons name="delete-empty" size={32} />}
 			<View className="gap-0.5 flex-1">

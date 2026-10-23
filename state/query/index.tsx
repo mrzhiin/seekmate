@@ -11,7 +11,8 @@ export const QueryProvider = (props: React.PropsWithChildren) => {
 				persister: asyncStoragePersister,
 				maxAge: 1000 * 60 * 60 * 24,
 				dehydrateOptions: {
-					shouldDehydrateQuery: (query) => query.meta?.persist === true,
+					shouldDehydrateQuery: (query) =>
+						query.meta?.persist === true && query.state.status === "success",
 				},
 			}}
 		>

@@ -24,7 +24,7 @@ export const AutoCheckIn = () => {
 		let cancelled = false;
 
 		queryClient
-			.fetchQuery(getAttendanceQueryOptions(userId))
+			.query(getAttendanceQueryOptions(userId))
 			.then((attendance) => {
 				if (!attendance && !cancelled) {
 					return webServiceContext.run(createAttendanceScript(checkInType));

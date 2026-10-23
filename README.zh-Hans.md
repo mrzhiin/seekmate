@@ -29,6 +29,7 @@ SeekMate 是一个基于 **Expo + React Native** 构建的 **Android 端 NodeSee
 ## 说明
 
 - 本项目为 **NodeSeek 非官方客户端**
+- 图床 API Key 填写后仅在本机持久化，不进行远端同步。每次成功登录（包括重新登录）或退出登录都会重置用户配置，清空 Key。
 
 ## 许可证
 

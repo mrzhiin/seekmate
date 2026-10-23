@@ -4,198 +4,61 @@ import {
 	type CheckInType as CheckInTypeValue,
 } from "@/store/appStore";
 
-export const createAttendanceScript = (checkInType: CheckInTypeValue) => {
-	const randomValue = checkInType === CheckInType.Random ? "true" : "false";
-
-	const url = new URL(
-		`api/attendance?random=${randomValue}`,
-		config.apiBaseUrl,
-	).toString();
-
-	return `
-const res = await fetch(
-    "${url}",
-    {
-        method: "POST",
-    },
-);
-
-return await res.json();
+const createRequestScript = (
+	path: string,
+	payload?: Record<string, unknown>,
+	headers: Record<string, string> = {},
+) => `
+const res = await fetch(${JSON.stringify(new URL(path, config.apiBaseUrl).toString())}, {
+	method: "POST",
+	body: ${payload ? `JSON.stringify(${JSON.stringify(payload)})` : "undefined"},
+	headers: ${JSON.stringify({ "Content-Type": "application/json", ...headers })},
+});
+const body = await res.json();
+if (!res.ok || !body || body.success !== true) {
+	throw new Error("Request failed (HTTP " + res.status + ")");
+}
+return { status: res.status, body };
 `;
-};
 
-function generateRandomString(length: number) {
-	let result = "";
-	const chars =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	const charsLength = chars.length;
-	let index = 0;
-	while (index < length) {
-		result += chars.charAt(Math.floor(Math.random() * charsLength));
-		index += 1;
-	}
-	return result;
-}
-
-export const createPostCommentScript = (payload: Record<string, unknown>) => {
-	const url = new URL("api/content/new-comment", config.apiBaseUrl).toString();
-	const t = generateRandomString(16);
-
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	"${url}",
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-			"csrf-token": "${t}"
-		},
-	},
-);
-
-let body = null;
-try {
-	body = await res.json();
-} catch (_) {
-	body = null;
-}
-
-if (!res.ok) {
-	throw new Error(
-		JSON.stringify({
-			status: res.status,
-			body,
-		}),
+export const createAttendanceScript = (checkInType: CheckInTypeValue) =>
+	createRequestScript(
+		`api/attendance?random=${checkInType === CheckInType.Random}`,
 	);
-}
 
-return {
-	status: res.status,
-	body,
-};
-`;
-};
+const csrfHeaders = () => ({
+	"csrf-token": Array.from({ length: 16 }, () =>
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".charAt(
+			Math.floor(Math.random() * 62),
+		),
+	).join(""),
+});
+
+export const createPostCommentScript = (payload: Record<string, unknown>) =>
+	createRequestScript("api/content/new-comment", payload, csrfHeaders());
 
 export const createPostScript = (payload: {
 	content: string;
 	title: string;
 	category: string;
 	mode: "new-discussion";
-	rank: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 255 | number;
-}) => {
-	const url = new URL(
-		"api/content/new-discussion",
-		config.apiBaseUrl,
-	).toString();
-	const t = generateRandomString(16);
-
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	"${url}",
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-			"csrf-token": "${t}"
-		},
-	},
-);
-
-let body = null;
-try {
-	body = await res.json();
-} catch (_) {
-	body = null;
-}
-
-if (!res.ok) {
-	throw new Error(
-		JSON.stringify({
-			status: res.status,
-			body,
-		}),
-	);
-}
-
-return {
-	status: res.status,
-	body,
-};
-`;
-};
+	rank: number;
+}) => createRequestScript("api/content/new-discussion", payload, csrfHeaders());
 
 export const createCollectionScript = (payload: {
 	postId: number;
 	action: "remove" | "add";
-}) => {
-	const url = new URL(
-		"api/statistics/collection",
-		config.apiBaseUrl,
-	).toString();
-
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	${JSON.stringify(url)},
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	},
-);
-
-return await res.json();
-`;
-};
+}) => createRequestScript("api/statistics/collection", payload);
 
 export const createUpvoteScript = (payload: {
 	commentId: number;
 	action: "add";
-}) => {
-	const url = new URL("api/statistics/upvote", config.apiBaseUrl).toString();
-
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	${JSON.stringify(url)},
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	},
-);
-
-return await res.json();
-`;
-};
+}) => createRequestScript("api/statistics/upvote", payload);
 
 export const createAppreciatScript = (payload: {
 	commentId: number;
 	action: "add";
-}) => {
-	const url = new URL("api/statistics/like", config.apiBaseUrl).toString();
+}) => createRequestScript("api/statistics/like", payload);
 
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	${JSON.stringify(url)},
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	},
-);
-
-return await res.json();
-`;
-};
+export const createBanScript = (payload: { block_member_name: string }) =>
+	createRequestScript("api/block-list/add", payload);

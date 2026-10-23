@@ -117,25 +117,21 @@ const RendererImageView = memo(
 		const [image, setImage] = useState<LoadedImage>();
 		const [error, setError] = useState<Error>();
 
-		const handleImageError = useCallback(
-			(error: Error) => {
-				const imageError = error as ImageError;
+		const handleImageError = useCallback((error: Error) => {
+			const imageError = error as ImageError;
 
-				Sentry.withScope((scope) => {
-					scope.setTag("renderer", "image");
-					scope.setContext("image", {
-						errorContextJson: JSON.stringify(imageError.imageContext),
-						rendererSourceJson: JSON.stringify(source),
-						stage: imageError.imageContext?.stage,
-						uri: source.uri,
-					});
-					Sentry.captureException(error);
+			Sentry.withScope((scope) => {
+				scope.setTag("renderer", "image");
+				scope.setContext("image", {
+					stage: imageError.imageContext?.stage,
+					fileExists: imageError.imageContext?.fileExists,
+					fileSize: imageError.imageContext?.fileSize,
 				});
+				Sentry.captureException(new Error("Image loading failed"));
+			});
 
-				setError(error);
-			},
-			[source],
-		);
+			setError(error);
+		}, []);
 
 		if (error) {
 			return <ErrorFallback />;

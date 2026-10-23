@@ -8,7 +8,7 @@
 	"auth": {
 		"title": "Log in",
 		"signingIn": "Logging",
-		"userDataFailed": "Could not load account data. Login was not completed. Please retry.",
+		"sessionFailed": "Could not initialize the login session. Please retry.",
 		"signInPrompt": {
 			"welcome": "Welcome",
 			"description": "Let's get started",
@@ -58,6 +58,7 @@
 		"siteSubtitle": "A place for people who love web development, hosting, VPS / servers and other geeky things",
 		"user": {
 			"logout": "Log out",
+			"logoutFailed": "Signed out locally, but clearing the web session failed. Retry cleanup to avoid reusing old credentials.",
 			"logoutDescription": "Log out of the current account",
 			"signIn": "Sign in",
 			"signInDescription": "Let's get started",
@@ -95,6 +96,7 @@
 			"publishing": "Publishing",
 			"success": "Published successfully",
 			"failed": "Failed to publish",
+			"timeout": "Publishing timed out. The result is unknown. Refresh to confirm before retrying.",
 			"formError": "Form error",
 			"category": {
 				"placeholder": "Select category"
@@ -127,9 +129,12 @@
 		"original": {
 			"poster": "Original poster"
 		},
+		"interaction": {
+			"failed": "Operation not confirmed. Refresh before retrying."
+		},
 		"inputBar": {
 			"placeholder": "Be kind, no personal attacks",
-			"timeout": "Comment reply timed out",
+			"timeout": "Sending the comment timed out. The result is unknown. Refresh to confirm before retrying.",
 			"success": "Comment replied successfully!",
 			"failed": "Comment reply failed"
 		},

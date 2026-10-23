@@ -29,6 +29,7 @@ Currently supports **Android only**.
 ## Notes
 
 - This project is an **unofficial NodeSeek client**
+- The image-hosting API key is persisted locally without remote synchronization. User settings, including the key, are reset on every successful login (including re-login) and on logout.
 
 ## License
 

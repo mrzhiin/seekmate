@@ -26,6 +26,7 @@ const MessageStringSchema = v.pipe(
 		success: v.boolean(),
 		data: v.optional(v.unknown()),
 		error: v.optional(v.string()),
+		code: v.optional(v.literal("TIMEOUT")),
 	}),
 );
 
@@ -154,6 +155,18 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 				}
 
 				const id = `event:${++countRef.current}`;
+				const controller = new AbortController();
+				const timeoutError: Message = {
+					id,
+					success: false,
+					error: `web operation timed out after ${RUN_TIMEOUT_MS}ms`,
+					code: "TIMEOUT",
+				};
+				// Include page loading and queueing, not just injected script execution.
+				const timeoutId = setTimeout(() => {
+					clearPendingEvent(id)?.reject(timeoutError);
+					controller.abort();
+				}, RUN_TIMEOUT_MS);
 
 				const task = queueRef.current.add(
 					async () => {
@@ -173,20 +186,6 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 							_reject = rej;
 						});
 
-						const timeoutId = setTimeout(() => {
-							const pendingEvent = clearPendingEvent(id);
-
-							if (!pendingEvent) {
-								return;
-							}
-
-							pendingEvent.reject({
-								id,
-								success: false,
-								error: `script execution timed out after ${RUN_TIMEOUT_MS}ms`,
-							});
-						}, RUN_TIMEOUT_MS);
-
 						const event = {
 							id,
 							resolve: _resolve,
@@ -200,14 +199,22 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 					},
 					{
 						id,
+						signal: controller.signal,
 					},
 				);
 
-				return task.catch((error: unknown) => {
-					throw error instanceof Error
-						? { id, success: false, error: error.message }
-						: error;
-				});
+				return task
+					.catch((error: unknown) => {
+						// React Native's AbortController does not preserve abort reasons.
+						if (controller.signal.aborted) throw timeoutError;
+						throw error instanceof Error
+							? { id, success: false, error: error.message }
+							: error;
+					})
+					.finally(() => {
+						clearTimeout(timeoutId);
+						clearPendingEvent(id);
+					});
 			},
 		};
 	}, [clearPendingEvent]);
@@ -260,6 +267,7 @@ export const WebRunner = ({ ref }: { ref?: Ref<WebRunnerRef> }) => {
 				onError={handleError}
 				onHttpError={handleHttpError}
 				onMessage={handleMessage}
+				webviewDebuggingEnabled={false}
 			/>
 		</View>
 	);

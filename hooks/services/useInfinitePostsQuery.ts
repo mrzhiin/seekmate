@@ -17,11 +17,12 @@ export const useInfinitePostsQuery = ({
 
 	const result = useInfiniteQuery({
 		queryKey,
-		queryFn: async ({ pageParam }) => {
+		queryFn: async ({ pageParam, signal }) => {
 			const res = await nsClient.get(
 				`${category ? `categories/${category}/` : ""}page-${pageParam.currentPage}`,
 				{
 					baseURL: config.siteUrl,
+					signal,
 					params: {
 						sortBy:
 							pageParam.sortBy && !category ? pageParam.sortBy : undefined,
@@ -59,9 +60,10 @@ export const useSearchInfinitePostsQuery = ({
 		enabled: Boolean(keyword),
 		retry: false,
 		queryKey,
-		queryFn: async ({ pageParam }) => {
+		queryFn: async ({ pageParam, signal }) => {
 			const res = await nsClient.get("search", {
 				baseURL: config.siteUrl,
+				signal,
 				params: {
 					page: pageParam.currentPage.toString(),
 					q: keyword || "",

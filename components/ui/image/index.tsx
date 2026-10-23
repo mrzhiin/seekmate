@@ -11,17 +11,20 @@ import {
 	type Image as NitroLoadedImage,
 	useImage,
 } from "react-native-nitro-image";
+import { useStore } from "zustand";
+import { waitForSessionCleanup } from "@/lib/auth/sessionCommand";
+import {
+	IMAGE_CACHE_MAX_AGE,
+	IMAGE_CACHE_WRITE_GRACE,
+	selectImageCacheEvictions,
+} from "@/lib/imageCachePolicy";
 import { Sentry } from "@/lib/sentry";
+import { userStore } from "@/store/userStore";
 
 const IMAGE_CACHE_DIRECTORY_NAME = "images-cache";
-const IMAGE_CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 const TEMPORARY_FILE_MAX_AGE = 60 * 60 * 1000;
-const IMAGE_CACHE_BUCKET_COUNT = 256;
 const IMAGE_CACHE_CLEANUP_INTERVAL = 30 * 60 * 1000;
-const IMAGE_CACHE_MIN_AGE_BEFORE_SIZE_CLEANUP = 5 * 60 * 1000;
 const IMAGE_DOWNLOAD_CONCURRENCY = 4;
-const IMAGE_CACHE_BUCKET_MIN_RETAINED_FILES = 4;
-const IMAGE_CACHE_BUCKET_MAX_SIZE = 64 * 1024 * 1024;
 
 type NormalizedUriImageSource = ImageURISource & {
 	uri: string;
@@ -42,6 +45,7 @@ export type ImageProps = Omit<NitroImageProps, "image"> & {
 };
 
 const imageDownloadPromisesMap = new Map<string, Promise<string>>();
+const recentImageCacheReads = new Map<string, number>();
 const imageDownloadQueue = new PQueue({
 	concurrency: IMAGE_DOWNLOAD_CONCURRENCY,
 });
@@ -52,7 +56,7 @@ const imageCacheDirectory = new Directory(
 
 let lastImageCacheCleanupTime = 0;
 let imageCacheCleanupPromise: Promise<void> | undefined;
-let nextImageCacheCleanupBucket = 0;
+let imageCacheCleanupTimer: ReturnType<typeof setTimeout> | undefined;
 
 const normalizeSource = (source: ImageProps["source"]) => {
 	if (typeof source === "string") {
@@ -81,12 +85,15 @@ const isRemoteImageSource = (
 	);
 };
 
-const createImageRequestKey = (source: NormalizedUriImageSource) => {
+const createImageRequestKey = (
+	source: NormalizedUriImageSource,
+	userId: number | undefined,
+) => {
 	const headers = Object.entries(source.headers ?? {}).sort(([a], [b]) =>
 		a.localeCompare(b),
 	);
 
-	return JSON.stringify({ headers, uri: source.uri });
+	return JSON.stringify({ headers, uri: source.uri, userId });
 };
 
 const createImageError = (
@@ -155,21 +162,17 @@ const deleteFileIfExists = (file: File) => {
 	}
 };
 
-const cleanupImageCacheBucketIfNeeded = () => {
+const cleanupImageCacheIfNeeded = (force = false) => {
 	const now = Date.now();
 	if (imageCacheCleanupPromise) return;
-	if (now - lastImageCacheCleanupTime < IMAGE_CACHE_CLEANUP_INTERVAL) return;
+	if (!force && now - lastImageCacheCleanupTime < IMAGE_CACHE_CLEANUP_INTERVAL)
+		return;
 
 	lastImageCacheCleanupTime = now;
-	const bucket = nextImageCacheCleanupBucket.toString(16).padStart(2, "0");
-	nextImageCacheCleanupBucket =
-		(nextImageCacheCleanupBucket + 1) % IMAGE_CACHE_BUCKET_COUNT;
-
-	imageCacheCleanupPromise = cleanupImageCacheBucket(bucket)
+	imageCacheCleanupPromise = cleanupImageCache()
 		.catch((error) => {
 			Sentry.withScope((scope) => {
 				scope.setTag("cache", "image");
-				scope.setContext("imageCacheCleanup", { bucket });
 				Sentry.captureException(error);
 			});
 			// Cache cleanup must not affect image rendering.
@@ -179,67 +182,65 @@ const cleanupImageCacheBucketIfNeeded = () => {
 		});
 };
 
-const cleanupImageCacheBucket = async (bucket: string) => {
-	const directory = new Directory(imageCacheDirectory, bucket);
-	if (!directory.exists) return;
-
+const cleanupImageCache = async () => {
+	if (!imageCacheDirectory.exists) return;
 	const now = Date.now();
-	const files: { file: File; size: number; modificationTime: number }[] = [];
-	let totalSize = 0;
-
-	for (const entry of directory.list()) {
-		if (!(entry instanceof File) || !entry.exists) continue;
-
-		const modificationTime = entry.modificationTime ?? 0;
-		const age = now - modificationTime;
-		const isTemporaryFile = entry.name.endsWith(".download");
-		const shouldDeleteTemporaryFile =
-			isTemporaryFile && age > TEMPORARY_FILE_MAX_AGE;
-		const shouldDeleteCachedFile =
-			!isTemporaryFile && age > IMAGE_CACHE_MAX_AGE;
-
-		if (shouldDeleteTemporaryFile || shouldDeleteCachedFile) {
-			deleteFileIfExists(entry);
-			continue;
-		}
-
-		if (isTemporaryFile) continue;
-
-		totalSize += entry.size;
-		files.push({ file: entry, size: entry.size, modificationTime });
+	for (const [uri, readAt] of recentImageCacheReads) {
+		if (now - readAt >= IMAGE_CACHE_WRITE_GRACE)
+			recentImageCacheReads.delete(uri);
 	}
-
-	if (totalSize > IMAGE_CACHE_BUCKET_MAX_SIZE) {
-		const oldestFilesFirst = files.sort(
-			(a, b) => a.modificationTime - b.modificationTime,
-		);
-
-		const deletableFileCount = Math.max(
-			oldestFilesFirst.length - IMAGE_CACHE_BUCKET_MIN_RETAINED_FILES,
-			0,
-		);
-
-		for (let index = 0; index < deletableFileCount; index++) {
-			if (totalSize <= IMAGE_CACHE_BUCKET_MAX_SIZE) break;
-			const item = oldestFilesFirst[index];
-			const age = now - item.modificationTime;
-
-			if (age < IMAGE_CACHE_MIN_AGE_BEFORE_SIZE_CLEANUP) continue;
-
-			deleteFileIfExists(item.file);
-			totalSize -= item.size;
+	const files: {
+		file: File;
+		size: number;
+		modificationTime: number;
+		lastAccessTime?: number;
+	}[] = [];
+	for (const directory of imageCacheDirectory.list()) {
+		if (!(directory instanceof Directory) || !directory.exists) continue;
+		for (const entry of directory.list()) {
+			if (!(entry instanceof File) || !entry.exists) continue;
+			const modificationTime = entry.modificationTime ?? 0;
+			if (entry.name.endsWith(".download")) {
+				if (now - modificationTime >= TEMPORARY_FILE_MAX_AGE)
+					deleteFileIfExists(entry);
+			} else {
+				files.push({
+					file: entry,
+					size: entry.size,
+					modificationTime,
+					lastAccessTime: recentImageCacheReads.get(entry.uri),
+				});
+			}
 		}
+		// Yield between buckets rather than blocking the UI for the entire scan.
+		await new Promise((resolve) => setTimeout(resolve, 0));
 	}
-
-	if (directory.exists && directory.list().length === 0) {
-		directory.delete();
+	for (const entry of selectImageCacheEvictions(files, now)) {
+		if (
+			Date.now() - (recentImageCacheReads.get(entry.file.uri) ?? 0) >=
+			IMAGE_CACHE_WRITE_GRACE
+		)
+			deleteFileIfExists(entry.file);
 	}
 };
+
+imageDownloadQueue.addEventListener("idle", () => {
+	cleanupImageCacheIfNeeded();
+	if (imageCacheCleanupTimer) return;
+	imageCacheCleanupTimer = setTimeout(() => {
+		imageCacheCleanupTimer = undefined;
+		cleanupImageCacheIfNeeded(true);
+	}, IMAGE_CACHE_WRITE_GRACE);
+});
 
 const downloadImageFile = async (
 	source: NormalizedUriImageSource,
 	key: string,
+	userId: number | undefined,
 ) => {
+	await waitForSessionCleanup();
+	if (userStore.getState().id !== userId)
+		throw new Error("Image session changed");
 	const { cacheFile, temporaryFile } = await createImageCacheFile(
 		key,
 		source.uri,
@@ -252,9 +253,14 @@ const downloadImageFile = async (
 		});
 	}
 
-	cleanupImageCacheBucketIfNeeded();
+	recentImageCacheReads.set(cacheFile.uri, Date.now());
+	cleanupImageCacheIfNeeded();
 
-	if (cacheFile.exists && cacheFile.size > 0) {
+	if (
+		cacheFile.exists &&
+		cacheFile.size > 0 &&
+		Date.now() - (cacheFile.modificationTime ?? 0) < IMAGE_CACHE_MAX_AGE
+	) {
 		return cacheFile.uri;
 	}
 
@@ -305,6 +311,8 @@ const downloadImageFile = async (
 			}
 		}
 
+		if (userStore.getState().id !== userId)
+			throw new Error("Image session changed");
 		await File.downloadFileAsync(source.uri, temporaryFile, {
 			headers,
 			idempotent: true,
@@ -314,6 +322,8 @@ const downloadImageFile = async (
 			throw new Error("Downloaded temporary image file does not exist");
 		}
 
+		if (userStore.getState().id !== userId)
+			throw new Error("Image session changed");
 		await temporaryFile.move(cacheFile);
 
 		if (!cacheFile.exists || cacheFile.size <= 0) {
@@ -328,12 +338,16 @@ const downloadImageFile = async (
 	}
 };
 
-const loadImageFile = (source: NormalizedUriImageSource, key: string) => {
+const loadImageFile = (
+	source: NormalizedUriImageSource,
+	key: string,
+	userId: number | undefined,
+) => {
 	const existing = imageDownloadPromisesMap.get(key);
 	if (existing) return existing;
 
 	const promise = imageDownloadQueue
-		.add(() => downloadImageFile(source, key))
+		.add(() => downloadImageFile(source, key, userId))
 		.finally(() => {
 			imageDownloadPromisesMap.delete(key);
 		});
@@ -347,14 +361,15 @@ const useCachedImageSource = (
 	source: ImageProps["source"],
 	onError?: (error: Error) => void,
 ) => {
+	const userId = useStore(userStore, (s) => s.id);
 	const normalizedSource = useMemo(() => normalizeSource(source), [source]);
 	const onErrorRef = useRef(onError);
 	onErrorRef.current = onError;
 	const requestKey = useMemo(() => {
 		return isRemoteImageSource(normalizedSource)
-			? createImageRequestKey(normalizedSource)
+			? createImageRequestKey(normalizedSource, userId)
 			: undefined;
-	}, [normalizedSource]);
+	}, [normalizedSource, userId]);
 
 	const normalizedSourceRef = useRef(normalizedSource);
 	const [cachedSource, setCachedSource] = useState<{
@@ -376,7 +391,11 @@ const useCachedImageSource = (
 
 		const load = async () => {
 			try {
-				const fileUri = await loadImageFile(remoteSource, remoteRequestKey);
+				const fileUri = await loadImageFile(
+					remoteSource,
+					remoteRequestKey,
+					userId,
+				);
 
 				if (!cancelled) {
 					setCachedSource({
@@ -402,7 +421,7 @@ const useCachedImageSource = (
 		return () => {
 			cancelled = true;
 		};
-	}, [requestKey]);
+	}, [requestKey, userId]);
 
 	if (!requestKey) {
 		if (typeof normalizedSource === "number") {
@@ -506,19 +525,19 @@ const ImageComponent = memo(
 );
 
 const clearDiskCache = async () => {
-	if (imageCacheDirectory.exists) {
-		imageCacheDirectory.delete();
+	imageDownloadQueue.pause();
+	try {
+		await imageDownloadQueue.onPendingZero();
+		await imageCacheCleanupPromise;
+		clearTimeout(imageCacheCleanupTimer);
+		imageCacheCleanupTimer = undefined;
+		recentImageCacheReads.clear();
+		if (imageCacheDirectory.exists) imageCacheDirectory.delete();
+		lastImageCacheCleanupTime = 0;
+		return true;
+	} finally {
+		imageDownloadQueue.start();
 	}
-
-	return true;
 };
 
-const clearMemoryCache = async () => {
-	imageDownloadPromisesMap.clear();
-	return true;
-};
-
-export const Image = Object.assign(ImageComponent, {
-	clearDiskCache,
-	clearMemoryCache,
-});
+export const Image = Object.assign(ImageComponent, { clearDiskCache });

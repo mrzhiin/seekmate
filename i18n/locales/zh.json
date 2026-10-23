@@ -8,7 +8,7 @@
 	"auth": {
 		"title": "登录",
 		"signingIn": "正在登录",
-		"userDataFailed": "账号数据查询失败，登录未完成，请重试。",
+		"sessionFailed": "登录初始化失败，请重试。",
 		"signInPrompt": {
 			"welcome": "欢迎",
 			"description": "开始使用",
@@ -58,6 +58,7 @@
 		"siteSubtitle": "A place for people who love web development, hosting, VPS / servers and other geeky things",
 		"user": {
 			"logout": "登出",
+			"logoutFailed": "本地账号已退出，但网页会话清理失败。为避免继续使用旧凭据，请重试清理。",
 			"logoutDescription": "退出当前账户",
 			"signIn": "登入",
 			"signInDescription": "开始使用",
@@ -95,6 +96,7 @@
 			"publishing": "发布中",
 			"success": "发布成功",
 			"failed": "发布失败",
+			"timeout": "发布超时，结果未知，请刷新确认后再决定是否重试",
 			"formError": "表单错误",
 			"category": {
 				"placeholder": "选择板块"
@@ -127,9 +129,12 @@
 		"original": {
 			"poster": "楼主"
 		},
+		"interaction": {
+			"failed": "操作未确认，请刷新后重试"
+		},
 		"inputBar": {
 			"placeholder": "鼓励友善发言，禁止人身攻击",
-			"timeout": "评论回复超时",
+			"timeout": "评论发送超时，结果未知，请刷新确认后再决定是否重试",
 			"success": "评论回复成功！",
 			"failed": "评论回复失败"
 		},

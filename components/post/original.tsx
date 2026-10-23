@@ -3,7 +3,7 @@ import relativeTime from "dayjs/plugin/relativeTime.js";
 import { produce } from "immer";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { ToastAndroid, View } from "react-native";
 import { useStore } from "zustand";
 import { Text } from "@/components/ui/text";
 import {
@@ -106,6 +106,7 @@ const Interactions = ({
 	postId: number;
 	data: PostPageData;
 }) => {
+	const { t } = useTranslation();
 	const [isFavoritedLoading, setIsFavoritedLoading] = useState(false);
 	const [isUpvotedLoading, setIsUpvotedLoading] = useState(false);
 	const [isAppreciatedLoading, setIsAppreciatedLoading] = useState(false);
@@ -140,14 +141,10 @@ const Interactions = ({
 
 		setLoading(true);
 		try {
-			const promise = webServiceContext.run(script);
-
-			if (!promise) {
-				return;
-			}
-
-			await promise;
+			await webServiceContext.run(script);
 			onSuccess();
+		} catch {
+			ToastAndroid.show(t("post.interaction.failed"), ToastAndroid.SHORT);
 		} finally {
 			setLoading(false);
 		}

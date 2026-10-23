@@ -8,30 +8,11 @@ import { Text } from "@/components/ui/text";
 import { useRashUserQuery } from "@/hooks/services/useUserQuery";
 import { config } from "@/lib/config";
 import { WebServiceContext } from "@/state/web";
+import { createBanScript } from "@/state/web/scripts";
 import { userStore } from "@/store/userStore";
 import { UserItem } from "../post/userItem";
 import { Pressable } from "../pressable";
 import { TrueSheetMenu } from "../trueSheet";
-
-const createBanScript = (payload: Record<string, unknown>) => {
-	const url = new URL(`/api/block-list/add`, config.apiBaseUrl).toString();
-
-	return `
-const data = ${JSON.stringify(payload)};
-const res = await fetch(
-	"${url}",
-	{
-		method: "POST",
-		body: JSON.stringify(data),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	},
-);
-
-return await res.json()
-`;
-};
 
 export const AvatarMenu = ({
 	uid,

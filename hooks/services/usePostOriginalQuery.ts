@@ -18,9 +18,10 @@ export const usePostOriginalQuery = ({ postId }: { postId: number }) => {
 	const result = useQuery({
 		enabled: Boolean(postId),
 		queryKey,
-		queryFn: async () => {
+		queryFn: async ({ signal }) => {
 			const res = await nsClient.get(`post-${postId}-1`, {
 				baseURL: config.siteUrl,
+				signal,
 			});
 
 			const htmlString = res.data;

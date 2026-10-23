@@ -42,6 +42,7 @@ export const NodeImageApiKey = () => {
 						placeholder="X-API-Key"
 						autoCapitalize="none"
 						autoCorrect={false}
+						secureTextEntry
 						className="min-h-12 rounded-xl bg-secondary px-4 text-base text-foreground"
 					/>
 					<Pressable

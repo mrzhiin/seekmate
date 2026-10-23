@@ -1,5 +1,4 @@
 import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
-import { batch } from "@legendapp/state";
 import { useObservable } from "@legendapp/state/react";
 import { useNavigation } from "@react-navigation/native";
 import type { InfiniteData } from "@tanstack/react-query";
@@ -46,6 +45,7 @@ import {
 import { useRefresh } from "@/hooks/useRefresh";
 import { config } from "@/lib/config";
 import type { Comment as CommentType, PostPageData } from "@/lib/parser";
+import { Sentry } from "@/lib/sentry";
 import { userStore } from "@/store/userStore";
 
 const VirtualizedListScrollView = forwardRef<
@@ -101,7 +101,7 @@ export const PostView = ({
 	});
 
 	const refreshFirstPage = useCallback(async () => {
-		const queryKey = postInfiniteCommentsQueryKey(id);
+		const queryKey = postInfiniteCommentsQueryKey(id, userId);
 
 		queryClient.setQueryData<typeof data>(queryKey, (oldData) => {
 			if (!oldData) {
@@ -116,7 +116,7 @@ export const PostView = ({
 		});
 
 		await refetch();
-	}, [id, queryClient, refetch]);
+	}, [id, userId, queryClient, refetch]);
 
 	const { isRefreshing, refresh } = useRefresh(refreshFirstPage);
 
@@ -236,7 +236,7 @@ export const PostView = ({
 	);
 
 	const refreshLastCommentsPage = useCallback(async () => {
-		const queryKey = postInfiniteCommentsQueryKey(id);
+		const queryKey = postInfiniteCommentsQueryKey(id, userId);
 		const cachedData =
 			queryClient.getQueryData<
 				InfiniteData<PostInfiniteCommentsPage, { currentPage: number }>
@@ -259,9 +259,16 @@ export const PostView = ({
 		let totalPages = currentPage;
 
 		do {
-			const page = await fetchPostCommentsPage({
-				postId: id,
-				currentPage,
+			const pageNumber = currentPage;
+			const page = await queryClient.query({
+				queryKey: [...queryKey, "refresh", pageNumber],
+				queryFn: ({ signal }) =>
+					fetchPostCommentsPage({
+						postId: id,
+						currentPage: pageNumber,
+						signal,
+					}),
+				gcTime: 0,
 			});
 
 			refreshedTailPages.push(page);
@@ -285,7 +292,7 @@ export const PostView = ({
 				],
 			};
 		});
-	}, [id, queryClient]);
+	}, [id, userId, queryClient]);
 
 	useEffect(() => {
 		let stateRead = false;
@@ -369,19 +376,9 @@ export const PostView = ({
 	}, [id, navigation]);
 
 	useEffect(() => {
-		if (comments?.length) {
-			batch(() => {
-				for (let index = 0; index < comments.length; index++) {
-					const comment = comments[index];
-
-					if (commentsById$[comment.id].peek()) {
-						commentsById$[comment.id].assign(comment);
-					} else {
-						commentsById$[comment.id].set(comment);
-					}
-				}
-			});
-		}
+		commentsById$.set(
+			Object.fromEntries(comments.map((comment) => [comment.id, comment])),
+		);
 	}, [comments, commentsById$]);
 
 	useEffect(() => {
@@ -492,7 +489,11 @@ export const PostView = ({
 							<InputBar
 								postId={id}
 								ref={inputBarRef}
-								onPost={refreshLastCommentsPage}
+								onPost={() => {
+									refreshLastCommentsPage().catch((error: unknown) =>
+										Sentry.captureException(error),
+									);
+								}}
 							/>
 						</View>
 					</KeyboardStickyView>

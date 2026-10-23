@@ -24,8 +24,10 @@ export const useNotificationQuery = () => {
 	const result = useQuery({
 		enabled: Boolean(userId),
 		queryKey: ["api/notification/unread-count", userId],
-		queryFn: async () => {
-			const res = await nsClient.get("api/notification/unread-count");
+		queryFn: async ({ signal }) => {
+			const res = await nsClient.get("api/notification/unread-count", {
+				signal,
+			});
 			const resData = res.data;
 			const result = v.safeParse(SuccessResSchema, resData);
 

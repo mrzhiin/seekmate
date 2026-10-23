@@ -18,8 +18,8 @@ export const useCategoriesQuery = () => {
 	const userId = useStore(userStore, (s) => s.id);
 	const result = useQuery({
 		queryKey: ["api/content/list-categories", userId],
-		queryFn: async () => {
-			const res = await nsClient.get("api/content/list-categories");
+		queryFn: async ({ signal }) => {
+			const res = await nsClient.get("api/content/list-categories", { signal });
 			const resData = res.data;
 			const result = v.safeParse(SuccessResSchema, resData);
 
@@ -45,8 +45,8 @@ export const useCategoriesSuspenseQuery = () => {
 	const userId = useStore(userStore, (s) => s.id);
 	const result = useSuspenseQuery({
 		queryKey: ["api/content/list-categories", userId],
-		queryFn: async () => {
-			const res = await nsClient.get("api/content/list-categories");
+		queryFn: async ({ signal }) => {
+			const res = await nsClient.get("api/content/list-categories", { signal });
 			const resData = res.data;
 			const result = v.safeParse(SuccessResSchema, resData);
 

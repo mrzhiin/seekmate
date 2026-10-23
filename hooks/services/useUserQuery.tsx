@@ -35,16 +35,11 @@ const UserSuccessResSchema = v.object({
 	detail: UserResSchema,
 });
 
-const _UserErrorResSchema = v.object({
-	success: v.literal(false),
-	message: v.nullish(v.string()),
-});
-
 export const useUserSuspenseQuery = (uid: number) => {
 	const result = useSuspenseQuery({
 		queryKey: ["api/account/getInfo/", uid],
-		queryFn: async () => {
-			const res = await nsClient.get(`api/account/getInfo/${uid}`);
+		queryFn: async ({ signal }) => {
+			const res = await nsClient.get(`api/account/getInfo/${uid}`, { signal });
 			const resData = res.data;
 			const result = v.safeParse(UserSuccessResSchema, resData);
 
@@ -82,32 +77,37 @@ export const useRashUserQuery = (uid: number, enabled = true) => {
 			persist: true,
 		},
 		queryKey: ["rash", "api/account/getInfo/", uid],
-		queryFn: () => {
-			return queue.add(async () => {
-				const res = await nsClient.get(`api/account/getInfo/${uid}`);
-				const resData = res.data;
-				const result = v.safeParse(UserSuccessResSchema, resData);
+		queryFn: ({ signal }) => {
+			return queue.add(
+				async () => {
+					const res = await nsClient.get(`api/account/getInfo/${uid}`, {
+						signal,
+					});
+					const resData = res.data;
+					const result = v.safeParse(UserSuccessResSchema, resData);
 
-				if (!result.success) {
-					throw new Error("API getInfo fail");
-				}
+					if (!result.success) {
+						throw new Error("API getInfo fail");
+					}
 
-				const detail = result.output.detail;
+					const detail = result.output.detail;
 
-				return {
-					uid: detail.member_id,
-					name: detail.member_name,
-					rank: detail.rank,
-					createdAt: dayjs(detail.created_at).valueOf(),
-					coinCount: detail.coin,
-					stardustCount: detail.stardust,
-					postCount: detail.nPost,
-					commentCount: detail.nComment,
-					favoriteCount: detail.collectionCount,
-					followingCount: detail.follows,
-					followerCount: detail.fans,
-				};
-			});
+					return {
+						uid: detail.member_id,
+						name: detail.member_name,
+						rank: detail.rank,
+						createdAt: dayjs(detail.created_at).valueOf(),
+						coinCount: detail.coin,
+						stardustCount: detail.stardust,
+						postCount: detail.nPost,
+						commentCount: detail.nComment,
+						favoriteCount: detail.collectionCount,
+						followingCount: detail.follows,
+						followerCount: detail.fans,
+					};
+				},
+				{ signal },
+			);
 		},
 	});
 };

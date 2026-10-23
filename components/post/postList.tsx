@@ -1,5 +1,5 @@
 import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
-import { batch, type observable } from "@legendapp/state";
+import type { observable } from "@legendapp/state";
 import {
 	Computed,
 	Memo,
@@ -301,19 +301,7 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 	);
 
 	useEffect(() => {
-		if (posts?.length) {
-			batch(() => {
-				for (let index = 0; index < posts.length; index++) {
-					const post = posts[index];
-
-					if (postsById$[post.id].peek()) {
-						postsById$[post.id].assign(post);
-					} else {
-						postsById$[post.id].set(post);
-					}
-				}
-			});
-		}
+		postsById$.set(Object.fromEntries(posts.map((post) => [post.id, post])));
 	}, [posts, postsById$]);
 
 	useScrollToTop(listRef);

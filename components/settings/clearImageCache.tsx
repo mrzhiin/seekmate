@@ -17,19 +17,17 @@ export const ClearImageCache = () => {
 		setIsClearing(true);
 
 		try {
-			const [memoryResult, diskResult] = await Promise.allSettled([
-				UIImage.clearMemoryCache(),
+			const results = await Promise.allSettled([
 				UIImage.clearDiskCache(),
 				Image.clearMemoryCache(),
 				Image.clearDiskCache(),
 			]);
 
-			const isMemoryCacheCleared =
-				memoryResult.status === "fulfilled" && memoryResult.value;
-			const isDiskCacheCleared =
-				diskResult.status === "fulfilled" && diskResult.value;
-
-			if (isMemoryCacheCleared && isDiskCacheCleared) {
+			if (
+				results.every(
+					(result) => result.status === "fulfilled" && result.value === true,
+				)
+			) {
 				ToastAndroid.show(
 					t("settings.clearImageCache.success"),
 					ToastAndroid.SHORT,

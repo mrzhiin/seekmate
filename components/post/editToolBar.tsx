@@ -66,7 +66,7 @@ export const EditToolBar = ({
 				end={{ x: 0.5, y: 1 }}
 				style={StyleSheet.absoluteFill}
 			/>
-			<View className="flex-row justify-between mx-2 my-1">
+			<View className="flex-row justify-between mx-2 mt-1 mb-2">
 				<View
 					className="bg-secondary flex-row items-center rounded-4xl border border-background overflow-hidden"
 					style={{

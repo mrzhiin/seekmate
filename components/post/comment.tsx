@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { ToastAndroid, View } from "react-native";
 import { useStore } from "zustand";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
@@ -64,14 +64,10 @@ export const Comment = observer(
 
 			setLoading(true);
 			try {
-				const promise = webServiceContext.run(script);
-
-				if (!promise) {
-					return;
-				}
-
-				await promise;
+				await webServiceContext.run(script);
 				onSuccess();
+			} catch {
+				ToastAndroid.show(t("post.interaction.failed"), ToastAndroid.SHORT);
 			} finally {
 				setLoading(false);
 			}

@@ -10,7 +10,11 @@ import WebView, {
 import * as v from "valibot";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/ui/text";
-import { signInUserSession } from "@/lib/auth/session";
+import {
+	signInUserSession,
+	signOutUserSession,
+	waitForSessionCleanup,
+} from "@/lib/auth/session";
 import { config } from "@/lib/config";
 import { ScreenName } from "@/stack/screenName";
 import type { ScreenParams } from "@/stack/screenParams";
@@ -63,6 +67,7 @@ const Screen = () => {
 	const webViewRef = useRef<WebView<unknown>>(null);
 	const { t } = useTranslation();
 	const [isSigningIn, setIsSigningIn] = useState(false);
+	const [isSessionReady, setIsSessionReady] = useState(false);
 	const prevUrlPathnameRef = useRef<string>(null);
 	const signInControllerRef = useRef<AbortController | null>(null);
 
@@ -80,6 +85,37 @@ const Screen = () => {
 		},
 		[],
 	);
+
+	useEffect(() => {
+		let active = true;
+		const prepareSession = async (retry = false) => {
+			try {
+				if (retry) await signOutUserSession();
+				else await waitForSessionCleanup();
+				if (active) setIsSessionReady(true);
+			} catch {
+				if (!active) return;
+				Alert.alert(t("auth.title"), t("settings.user.logoutFailed"), [
+					{
+						text: t("common.cancel"),
+						style: "cancel",
+						onPress: () => navigation.goBack(),
+					},
+					{
+						text: t("common.retry"),
+						onPress: () => {
+							prepareSession(true);
+						},
+					},
+				]);
+			}
+		};
+
+		prepareSession();
+		return () => {
+			active = false;
+		};
+	}, [navigation, t]);
 
 	useEffect(() => () => signInControllerRef.current?.abort(), []);
 
@@ -104,8 +140,10 @@ const Screen = () => {
 				navigation.popTo(ScreenName.Tabs);
 			}
 		} catch {
+			signInControllerRef.current = null;
 			if (!controller.signal.aborted) {
-				Alert.alert(t("auth.title"), t("auth.userDataFailed"), [
+				setIsSigningIn(false);
+				Alert.alert(t("auth.title"), t("auth.sessionFailed"), [
 					{ text: t("common.cancel"), style: "cancel" },
 					{
 						text: t("common.retry"),
@@ -114,11 +152,6 @@ const Screen = () => {
 						},
 					},
 				]);
-			}
-		} finally {
-			signInControllerRef.current = null;
-			if (!controller.signal.aborted) {
-				setIsSigningIn(false);
 			}
 		}
 	};
@@ -136,25 +169,29 @@ const Screen = () => {
 
 	return (
 		<View className="flex-1">
+			{/* 固定 WebView 的原生父节点，避免登录状态切换与退场动画触发 Fabric 重挂载崩溃。 */}
 			<View
+				collapsable={false}
 				className="flex-1"
 				pointerEvents={isSigningIn ? "none" : "auto"}
 				importantForAccessibility={isSigningIn ? "no-hide-descendants" : "auto"}
 			>
-				<WebView<unknown>
-					ref={webViewRef}
-					className="flex-1"
-					showsHorizontalScrollIndicator={false}
-					showsVerticalScrollIndicator={false}
-					source={{
-						uri: SIGNIN_URL,
-					}}
-					onNavigationStateChange={handleNavigationStateChange}
-					onMessage={handleMessage}
-					webviewDebuggingEnabled={false}
-				/>
+				{isSessionReady && (
+					<WebView<unknown>
+						ref={webViewRef}
+						className="flex-1"
+						showsHorizontalScrollIndicator={false}
+						showsVerticalScrollIndicator={false}
+						source={{
+							uri: SIGNIN_URL,
+						}}
+						onNavigationStateChange={handleNavigationStateChange}
+						onMessage={handleMessage}
+						webviewDebuggingEnabled={false}
+					/>
+				)}
 			</View>
-			{isSigningIn && (
+			{(!isSessionReady || isSigningIn) && (
 				<View
 					className="absolute inset-0 items-center justify-center gap-4 bg-background/80 px-6"
 					accessible

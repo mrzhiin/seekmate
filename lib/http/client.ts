@@ -1,8 +1,12 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, CanceledError } from "axios";
 import Constants from "expo-constants";
 import * as v from "valibot";
-import { signOutUserSession } from "@/lib/auth/session";
+import { signOutUserSession, waitForSessionCleanup } from "@/lib/auth/session";
+import { Sentry } from "@/lib/sentry";
+import { userStore } from "@/store/userStore";
 import { config } from "../config";
+
+const requestUsers = new WeakMap<object, number | undefined>();
 
 export const nsClient = axios.create({
 	baseURL: config.apiBaseUrl,
@@ -10,6 +14,11 @@ export const nsClient = axios.create({
 
 nsClient.interceptors.request.use(
 	async (config) => {
+		const userId = userStore.getState().id;
+		await waitForSessionCleanup();
+		if (userStore.getState().id !== userId)
+			throw new CanceledError("User session changed");
+		requestUsers.set(config, userId);
 		const headers = config.headers;
 		const ua = await Constants.getWebViewUserAgentAsync();
 
@@ -17,10 +26,12 @@ nsClient.interceptors.request.use(
 			headers.set("User-Agent", ua);
 		}
 
+		if (userStore.getState().id !== userId)
+			throw new CanceledError("User session changed");
 		return config;
 	},
 	(error) => {
-		Promise.reject(error);
+		return Promise.reject(error);
 	},
 );
 
@@ -41,10 +52,14 @@ nsClient.interceptors.response.use(
 		if (error instanceof AxiosError) {
 			const data = error.response?.data;
 			if (
-				v.safeParse(ErrorUser404Schema, data).success ||
-				v.safeParse(ErrorUser401Schema, data).success
+				error.config &&
+				requestUsers.get(error.config) === userStore.getState().id &&
+				(v.safeParse(ErrorUser404Schema, data).success ||
+					v.safeParse(ErrorUser401Schema, data).success)
 			) {
-				signOutUserSession();
+				void signOutUserSession().catch((error: unknown) =>
+					Sentry.captureException(error),
+				);
 			}
 		}
 

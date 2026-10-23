@@ -2,7 +2,6 @@ import * as v from "valibot";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import { StorageKey } from "@/lib/storage";
-import { writeRemoteData } from "@/lib/userData/sync";
 import { createCustomStorage } from "@/store/util";
 
 type State = {
@@ -20,14 +19,10 @@ export const createInitialState = (): State => ({
 
 export const userDataStore = createStore<State & Action>()(
 	persist(
-		(set, get) => ({
+		(set) => ({
 			...createInitialState(),
 			reset: () => set(createInitialState()),
-			update: (state) => {
-				set(state);
-				const { nodeImageApiKey } = get();
-				writeRemoteData({ nodeImageApiKey });
-			},
+			update: (state) => set(state),
 		}),
 		{
 			version: 0,

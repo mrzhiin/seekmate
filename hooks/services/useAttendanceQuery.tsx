@@ -19,8 +19,8 @@ const SuccessResSchema = v.object({
 export const getAttendanceQueryOptions = (userId: number) => {
 	return {
 		queryKey: ["api/attendance/board?page=1", userId] as const,
-		queryFn: async () => {
-			const res = await nsClient.get("api/attendance/board?page=1");
+		queryFn: async ({ signal }: { signal: AbortSignal }) => {
+			const res = await nsClient.get("api/attendance/board?page=1", { signal });
 			const resData = res.data;
 			const result = v.safeParse(SuccessResSchema, resData);
 

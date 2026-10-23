@@ -17,7 +17,6 @@ export const asyncStoragePersister = createAsyncStoragePersister({
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			experimental_prefetchInRender: true,
 			retry: false,
 		},
 	},

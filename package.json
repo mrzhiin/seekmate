@@ -73,7 +73,6 @@
 		"react-hook-form": "^7.90.0",
 		"react-i18next": "^17.0.16",
 		"react-native": "^0.86.3",
-		"react-native-device-info": "^15.0.2",
 		"react-native-gesture-handler": "^3.3.0",
 		"react-native-keyboard-controller": "^1.22.7",
 		"react-native-mmkv": "^4.3.2",

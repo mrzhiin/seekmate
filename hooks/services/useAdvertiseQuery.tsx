@@ -16,8 +16,8 @@ const SuccessResSchema = v.object({
 export const useAdvertiseQuery = () => {
 	const result = useQuery({
 		queryKey: ["api/promotion/list"],
-		queryFn: async () => {
-			const res = await nsClient.get("api/promotion/list");
+		queryFn: async ({ signal }) => {
+			const res = await nsClient.get("api/promotion/list", { signal });
 			const resData = res.data;
 			const result = v.safeParse(SuccessResSchema, resData);
 

@@ -122,12 +122,6 @@ const Screen = ({ navigation }: Props) => {
 
 			const publishRequest = webServiceContext.run(createPostScript(form));
 
-			if (!publishRequest) {
-				ToastAndroid.show(t("post.new.failed"), ToastAndroid.SHORT);
-				setIsSubmitting(false);
-				return;
-			}
-
 			publishRequest
 				.then((message) => {
 					if (message.success) {
@@ -137,8 +131,15 @@ const Screen = ({ navigation }: Props) => {
 						ToastAndroid.show(t("post.new.failed"), ToastAndroid.SHORT);
 					}
 				})
-				.catch((_) => {
-					ToastAndroid.show(t("post.new.failed"), ToastAndroid.SHORT);
+				.catch((error: unknown) => {
+					const timedOut = v.is(
+						v.object({ code: v.literal("TIMEOUT") }),
+						error,
+					);
+					ToastAndroid.show(
+						t(timedOut ? "post.new.timeout" : "post.new.failed"),
+						ToastAndroid.LONG,
+					);
 				})
 				.finally(() => {
 					setIsSubmitting(false);

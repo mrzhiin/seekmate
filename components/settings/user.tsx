@@ -13,6 +13,15 @@ export const User = () => {
 	const navigation = useNavigation();
 	const { t } = useTranslation();
 
+	const logout = () => {
+		signOutUserSession().catch(() => {
+			Alert.alert(t("settings.user.logout"), t("settings.user.logoutFailed"), [
+				{ text: t("common.cancel"), style: "cancel" },
+				{ text: t("common.retry"), onPress: logout },
+			]);
+		});
+	};
+
 	if (userId) {
 		return (
 			<Item
@@ -28,9 +37,7 @@ export const User = () => {
 						{
 							text: t("common.confirm"),
 							style: "destructive",
-							onPress: () => {
-								signOutUserSession();
-							},
+							onPress: logout,
 						},
 					]);
 				}}

@@ -1,6 +1,7 @@
 import * as v from "valibot";
 import { getStyle, postStyle } from "@/hooks/services/useStyle";
 
+// 预留功能：通过远端 CSS 保存用户配置，待 useStyle 接口实现后接入；请勿作为无用代码删除。
 const SEEKMATE_DATA_V1_COMMENT_PATTERN = /\/\* @seekmate-data-v1:([^\s]*) \*\//;
 
 function parseUserDataFromCss(css: string): UserData {

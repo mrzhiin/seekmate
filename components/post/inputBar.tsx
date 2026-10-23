@@ -9,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TextInput, ToastAndroid, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as v from "valibot";
 import { useCSSVariableString } from "@/hooks/useStyle";
 import { WebServiceContext } from "@/state/web";
 import { createPostCommentScript } from "@/state/web/scripts";
@@ -67,8 +68,12 @@ export const InputBar = ({
 					ToastAndroid.show(t("post.inputBar.failed"), ToastAndroid.SHORT);
 				}
 			})
-			.catch((_) => {
-				ToastAndroid.show(t("post.inputBar.failed"), ToastAndroid.SHORT);
+			.catch((error: unknown) => {
+				const timedOut = v.is(v.object({ code: v.literal("TIMEOUT") }), error);
+				ToastAndroid.show(
+					t(timedOut ? "post.inputBar.timeout" : "post.inputBar.failed"),
+					ToastAndroid.LONG,
+				);
 			})
 			.finally(() => {
 				setIsLoading(false);

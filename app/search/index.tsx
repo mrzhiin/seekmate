@@ -13,8 +13,6 @@ import { useSearchInfinitePostsQuery } from "@/hooks/services/useInfinitePostsQu
 import { StorageKey } from "@/lib/storage";
 import type { ScreenParams } from "@/stack/screenParams";
 
-const MaxKeywordSize = 10;
-
 const Screen = () => {
 	const navigation = useNavigation<NativeStackNavigationProp<ScreenParams>>();
 	const { t } = useTranslation();
@@ -31,19 +29,12 @@ const Screen = () => {
 	const handleSearch = useCallback(
 		(keyword: string) => {
 			setKeyword(keyword);
-			setKeywords((p) => {
-				if (Array.isArray(p)) {
-					const newList = [...new Set([...p.toReversed(), keyword])];
-
-					if (newList.length >= MaxKeywordSize) {
-						newList.shift();
-					}
-
-					return newList.reverse();
-				} else {
-					return [keyword];
-				}
-			});
+			setKeywords((previous) =>
+				[keyword, ...(previous ?? []).filter((item) => item !== keyword)].slice(
+					0,
+					10,
+				),
+			);
 		},
 		[setKeywords],
 	);

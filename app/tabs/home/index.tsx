@@ -1,4 +1,5 @@
 import { FloatingActionButton, Host, Icon } from "@expo/ui/jetpack-compose";
+import { clip, Shapes } from "@expo/ui/jetpack-compose/modifiers";
 import RNMaterialDesignIcons from "@react-native-vector-icons/material-design-icons";
 import { Header } from "@react-navigation/elements";
 import {
@@ -8,6 +9,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useResolveClassNames } from "uniwind";
 import { useStore } from "zustand";
@@ -54,6 +56,10 @@ const Screen = () => {
 	const [currentSlug, setCurrentSlug] = useState<string | null>(null);
 	const fabHostStyle = useResolveClassNames("absolute bottom-6 right-6");
 	const primaryColor = useCSSVariableString("--color-primary");
+	const secondaryForegroundColor = useCSSVariableString(
+		"--color-secondary-foreground",
+	);
+	const borderColor = useCSSVariableString("--color-border");
 	const primaryForegroundColor = useCSSVariableString(
 		"--color-primary-foreground",
 	);
@@ -76,20 +82,25 @@ const Screen = () => {
 			<Header
 				title={t("common.appName")}
 				headerShadowVisible={false}
+				headerTitleStyle={{ fontSize: 22, fontWeight: "600" }}
 				headerRight={() => {
 					return (
-						<Pressable
-							className="mr-2 rounded-full justify-center items-center"
-							style={{
-								height: 40,
-								aspectRatio: 1,
-							}}
-							onPress={() => {
-								navigation.navigate(ScreenName.Search);
-							}}
-						>
-							<MaterialDesignIcons name="magnify" size={24} />
-						</Pressable>
+						<View className="mr-4 overflow-hidden rounded-full bg-secondary">
+							<Pressable
+								accessibilityRole="button"
+								accessibilityLabel={t("search.placeholder")}
+								className="items-center justify-center"
+								style={{
+									height: 48,
+									aspectRatio: 1,
+								}}
+								onPress={() => {
+									navigation.navigate(ScreenName.Search);
+								}}
+							>
+								<MaterialDesignIcons name="magnify" size={24} />
+							</Pressable>
+						</View>
 					);
 				}}
 			/>
@@ -103,6 +114,20 @@ const Screen = () => {
 					},
 					tabBarLabelStyle: {
 						fontSize: 16,
+						fontWeight: "600",
+						textTransform: "none",
+					},
+					tabBarActiveTintColor: primaryColor,
+					tabBarInactiveTintColor: secondaryForegroundColor,
+					tabBarIndicatorStyle: {
+						height: 3,
+						borderTopLeftRadius: 3,
+						borderTopRightRadius: 3,
+					},
+					tabBarStyle: {
+						elevation: 0,
+						borderBottomWidth: 1,
+						borderBottomColor: borderColor,
 					},
 					lazy: true,
 					tabBarScrollEnabled: !!pinnedCategories.length,
@@ -142,6 +167,7 @@ const Screen = () => {
 				<Host matchContents pointerEvents="box-only" style={fabHostStyle}>
 					<FloatingActionButton
 						containerColor={primaryColor}
+						modifiers={[clip(Shapes.Circle)]}
 						onClick={() => {
 							navigation.navigate(ScreenName.PostNew);
 						}}

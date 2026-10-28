@@ -2,10 +2,18 @@ import Constants from "expo-constants";
 import * as Crypto from "expo-crypto";
 import { Directory, File, Paths } from "expo-file-system";
 import PQueue from "p-queue";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type ComponentProps,
+	memo,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import type { ImageSourcePropType, ImageURISource } from "react-native";
 import NitroCookies from "react-native-nitro-cookies";
 import {
+	type NativeNitroImage,
 	NitroImage,
 	type NitroImageProps,
 	type Image as NitroLoadedImage,
@@ -38,7 +46,10 @@ export type ImageError = Error & {
 	imageContext?: ImageErrorContext;
 };
 
-export type ImageProps = Omit<NitroImageProps, "image"> & {
+export type ImageProps = Omit<
+	ComponentProps<typeof NativeNitroImage>,
+	"image"
+> & {
 	source?: ImageSourcePropType | string;
 	onImageError?: (error: Error) => void;
 	onImageLoad?: (image: NitroLoadedImage) => void;
@@ -63,7 +74,12 @@ const normalizeSource = (source: ImageProps["source"]) => {
 		return { uri: source } satisfies NormalizedUriImageSource;
 	}
 
-	if (source && !Array.isArray(source) && typeof source === "object") {
+	if (
+		source &&
+		!Array.isArray(source) &&
+		typeof source === "object" &&
+		"uri" in source
+	) {
 		const uri = source.uri?.trim();
 		if (uri) {
 			return { ...source, uri } satisfies NormalizedUriImageSource;
@@ -80,6 +96,7 @@ const isRemoteImageSource = (
 		Boolean(source) &&
 		!Array.isArray(source) &&
 		typeof source === "object" &&
+		"uri" in source &&
 		typeof source.uri === "string" &&
 		/^https?:\/\//i.test(source.uri)
 	);
@@ -432,6 +449,7 @@ const useCachedImageSource = (
 			!normalizedSource ||
 			Array.isArray(normalizedSource) ||
 			typeof normalizedSource !== "object" ||
+			!("uri" in normalizedSource) ||
 			typeof normalizedSource.uri !== "string"
 		) {
 			return undefined;

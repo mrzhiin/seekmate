@@ -10,8 +10,8 @@
 		"signingIn": "正在登录",
 		"sessionFailed": "登录初始化失败，请重试。",
 		"signInPrompt": {
-			"welcome": "欢迎",
-			"description": "开始使用",
+			"welcome": "欢迎使用",
+			"description": "登录或注册，开启你的探索之旅。",
 			"signIn": "登录",
 			"register": "注册"
 		}
@@ -35,7 +35,9 @@
 		}
 	},
 	"search": {
-		"placeholder": "搜索"
+		"placeholder": "搜索",
+		"recent": "最近搜索",
+		"longPressToRemove": "长按删除"
 	},
 	"categoriesSort": {
 		"title": "板块排序"
@@ -51,6 +53,7 @@
 	},
 	"settings": {
 		"title": "设置",
+		"preferences": "偏好设置",
 		"about": "关于",
 		"version": "版本",
 		"github": "Github",
@@ -132,6 +135,9 @@
 		"interaction": {
 			"failed": "操作未确认，请刷新后重试"
 		},
+		"actions": {
+			"reply": "回复"
+		},
 		"inputBar": {
 			"placeholder": "鼓励友善发言，禁止人身攻击",
 			"timeout": "评论发送超时，结果未知，请刷新确认后再决定是否重试",
@@ -139,6 +145,7 @@
 			"failed": "评论回复失败"
 		},
 		"menu": {
+			"more": "更多操作",
 			"openInBrowser": "在浏览器中打开"
 		}
 	},

@@ -11,7 +11,7 @@
 		"sessionFailed": "Could not initialize the login session. Please retry.",
 		"signInPrompt": {
 			"welcome": "Welcome",
-			"description": "Let's get started",
+			"description": "Log in or create an account to get started.",
 			"signIn": "Log in",
 			"register": "Register"
 		}
@@ -35,7 +35,9 @@
 		}
 	},
 	"search": {
-		"placeholder": "Search"
+		"placeholder": "Search",
+		"recent": "Recent searches",
+		"longPressToRemove": "Long press to remove"
 	},
 	"categoriesSort": {
 		"title": "Category sorting"
@@ -51,6 +53,7 @@
 	},
 	"settings": {
 		"title": "Settings",
+		"preferences": "Preferences",
 		"about": "About",
 		"version": "Version",
 		"github": "GitHub",
@@ -132,6 +135,9 @@
 		"interaction": {
 			"failed": "Operation not confirmed. Refresh before retrying."
 		},
+		"actions": {
+			"reply": "Reply"
+		},
 		"inputBar": {
 			"placeholder": "Be kind, no personal attacks",
 			"timeout": "Sending the comment timed out. The result is unknown. Refresh to confirm before retrying.",
@@ -139,6 +145,7 @@
 			"failed": "Comment reply failed"
 		},
 		"menu": {
+			"more": "More actions",
 			"openInBrowser": "Open in browser"
 		}
 	},

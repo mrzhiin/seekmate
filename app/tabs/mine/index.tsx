@@ -1,8 +1,8 @@
 import { Header } from "@react-navigation/elements";
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
-import { useRef } from "react";
+import { type ComponentRef, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshControl, ScrollView } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView as RNScreensSafeAreaView } from "react-native-screens/experimental";
 import { useStore } from "zustand";
 import { MineResolver } from "@/components/mine/mineResolver";
@@ -19,7 +19,7 @@ const Screen = () => {
 	const uid = useStore(userStore, (s) => s.id);
 	const { t } = useTranslation();
 	const mineViewRef = useRef<MineViewRef>(null);
-	const scrollViewRef = useRef<ScrollView>(null);
+	const scrollViewRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
 	const { isRefreshing, refresh } = useRefresh(async () => {
 		await mineViewRef.current?.refresh();
@@ -54,18 +54,22 @@ const Screen = () => {
 					headerTransparent
 					headerRight={() => {
 						return (
-							<Pressable
-								className="mr-2 rounded-full justify-center items-center"
-								style={{
-									height: 40,
-									aspectRatio: 1,
-								}}
-								onPress={() => {
-									navigation.navigate(ScreenName.Settings);
-								}}
-							>
-								<MaterialDesignIcons name="cog" size={24} />
-							</Pressable>
+							<View className="mr-4 overflow-hidden rounded-full bg-secondary">
+								<Pressable
+									accessibilityRole="button"
+									accessibilityLabel={t("settings.title")}
+									className="items-center justify-center"
+									style={{
+										height: 48,
+										aspectRatio: 1,
+									}}
+									onPress={() => {
+										navigation.navigate(ScreenName.Settings);
+									}}
+								>
+									<MaterialDesignIcons name="cog" size={24} />
+								</Pressable>
+							</View>
 						);
 					}}
 				/>

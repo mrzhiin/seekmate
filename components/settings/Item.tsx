@@ -1,6 +1,7 @@
 import type { MaterialDesignIconsIconName } from "@react-native-vector-icons/material-design-icons";
 import type { ReactNode } from "react";
 import { View } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { Pressable } from "@/components/pressable";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { Text } from "@/components/ui/text";
@@ -24,18 +25,38 @@ export const Item = ({
 }: ItemProps) => {
 	return (
 		<Pressable
-			className={`flex-row px-6 py-4 gap-4 items-center ${disabled ? "opacity-50" : ""}`}
+			className={twMerge(
+				"min-h-18 flex-row items-center gap-4 rounded-xl px-4 py-4",
+				disabled && "opacity-50",
+			)}
 			onPress={onPress}
-			disabled={disabled}
+			disabled={disabled || !onPress}
 			accessibilityRole={onPress ? "button" : undefined}
 			accessibilityState={{ disabled }}
 		>
-			{icon && <MaterialDesignIcons name="delete-empty" size={32} />}
-			<View className="gap-0.5 flex-1">
-				<Text className="text-lg">{label}</Text>
-				{subLabel && <Text className="text-sm">{subLabel}</Text>}
+			{icon && (
+				<View importantForAccessibility="no-hide-descendants">
+					<MaterialDesignIcons
+						name={icon}
+						size={24}
+						className="text-secondary-foreground"
+					/>
+				</View>
+			)}
+			<View className="flex-1 gap-1">
+				<Text className="text-base">{label}</Text>
+				{subLabel && (
+					<Text className="text-sm text-secondary-foreground">{subLabel}</Text>
+				)}
 			</View>
-			{right}
+			{right ??
+				(onPress && (
+					<MaterialDesignIcons
+						name="chevron-right"
+						size={22}
+						className="text-secondary-foreground"
+					/>
+				))}
 		</Pressable>
 	);
 };

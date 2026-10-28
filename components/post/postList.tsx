@@ -59,13 +59,13 @@ const PostItem = observer(
 			<Pressable
 				onPress={onPress}
 				onLongPress={onLongPress}
-				className="flex-row gap-4 px-4 py-4"
+				className="flex-row gap-3 px-4 py-4"
 			>
 				<Computed>
 					{() => {
 						return (
 							<Avatar
-								size={40}
+								size={48}
 								uid={item$.author.uid.get()}
 								showRank
 								enableMenu={false}
@@ -74,12 +74,12 @@ const PostItem = observer(
 						);
 					}}
 				</Computed>
-				<View className="gap-2 flex-1">
+				<View className="flex-1 gap-1">
 					<View className="flex-row items-center">
 						<Computed>
 							{() => {
 								return (
-									<Text className="flex-1 text-muted-foreground">
+									<Text className="flex-1 font-semibold" numberOfLines={1}>
 										{item$.author.name.get()}
 									</Text>
 								);
@@ -112,24 +112,11 @@ const PostItem = observer(
 									);
 								}}
 							</Computed>
-							<Computed>
-								{() => {
-									return (
-										item$.isLocked.get() && (
-											<MaterialDesignIcons
-												name="lock"
-												size={14}
-												className="text-destructive"
-											/>
-										)
-									);
-								}}
-							</Computed>
-							<View className="border border-border px-1 rounded-md bg-muted">
+							<View className="rounded-full bg-muted px-2 py-0.5">
 								<Computed>
 									{() => {
 										return (
-											<Text className="text-muted-foreground">
+											<Text className="text-secondary-foreground dark:text-muted-foreground">
 												{item$.category.nameZh.get()}
 											</Text>
 										);
@@ -138,16 +125,29 @@ const PostItem = observer(
 							</View>
 						</View>
 					</View>
-					<Computed>
-						{() => {
-							return (
-								<Text className="text-base" numberOfLines={2}>
+					<View className="flex-row items-start gap-1.5">
+						<Computed>
+							{() =>
+								item$.isLocked.get() ? (
+									<View className="pt-1">
+										<MaterialDesignIcons
+											name="lock"
+											size={14}
+											className="text-rose-400 dark:text-rose-400"
+										/>
+									</View>
+								) : null
+							}
+						</Computed>
+						<Computed>
+							{() => (
+								<Text className="flex-1 text-base" numberOfLines={2}>
 									{item$.title.get()}
 								</Text>
-							);
-						}}
-					</Computed>
-					<View className="flex-row">
+							)}
+						</Computed>
+					</View>
+					<View className="mt-2 flex-row">
 						<Computed>
 							{() => {
 								return [
@@ -168,11 +168,15 @@ const PostItem = observer(
 									},
 								].map((x) => (
 									<View
-										className="flex-1 flex-row items-center gap-1"
+										className="flex-1 flex-row items-center gap-1.5"
 										key={x.key}
 									>
-										<MaterialDesignIcons name={x.icon} size={12} />
-										<Text className="text-muted-foreground text-xs">
+										<MaterialDesignIcons
+											name={x.icon}
+											size={14}
+											className="text-secondary-foreground dark:text-muted-foreground"
+										/>
+										<Text className="text-xs text-secondary-foreground dark:text-muted-foreground">
 											{x.value}
 										</Text>
 									</View>
@@ -255,14 +259,7 @@ export const PostListView = ({ query }: { query: PostListQuery }) => {
 	}, [data?.pages]);
 
 	const Separator = useCallback(
-		() => (
-			<View
-				style={{
-					height: 1,
-				}}
-				className="bg-border"
-			/>
-		),
+		() => <View className="ml-19 h-px bg-border opacity-50" />,
 		[],
 	);
 

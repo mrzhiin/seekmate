@@ -15,6 +15,7 @@ export const AuthCheckIn = () => {
 
 	return (
 		<Item
+			icon="calendar-check-outline"
 			label={t("settings.autoCheckIn.label")}
 			subLabel={t("settings.autoCheckIn.description")}
 			right={

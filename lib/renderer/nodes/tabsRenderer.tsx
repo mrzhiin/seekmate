@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
 import { useRenderNodeChildren } from "../node";
@@ -42,16 +43,18 @@ export const TabsRenderer = memo(
 									onPress={() => setActiveTabIndex(index)}
 									accessibilityRole="tab"
 									accessibilityState={{ selected: isActive }}
-									className={`rounded-full px-2.5 py-2 ${
-										isActive ? "bg-primary" : "bg-muted"
-									}`}
+									className={twMerge(
+										"rounded-full px-2.5 py-2",
+										isActive ? "bg-primary" : "bg-muted",
+									)}
 								>
 									<Text
-										className={`text-xs ${
+										className={twMerge(
+											"text-xs",
 											isActive
 												? "text-primary-foreground"
-												: "text-muted-foreground"
-										}`}
+												: "text-muted-foreground",
+										)}
 										numberOfLines={1}
 									>
 										{label}

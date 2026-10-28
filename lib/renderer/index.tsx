@@ -1,4 +1,5 @@
 import type { SerializedEditorState } from "lexical";
+import { twMerge } from "tailwind-merge";
 import { NodeContext } from "./context";
 import { NodeRenderer } from "./node";
 
@@ -12,7 +13,7 @@ export const Renderer = ({
 	return (
 		<NodeContext.Provider
 			value={{
-				textClassName: `text-foreground text-sans font-medium ${textClassName || ""}`,
+				textClassName: twMerge("text-foreground font-medium", textClassName),
 			}}
 		>
 			<NodeRenderer node={state.root} />

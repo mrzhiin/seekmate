@@ -1,6 +1,7 @@
 import * as Linking from "expo-linking";
 import { memo, useCallback, useContext, useMemo } from "react";
 import { Text as RNText } from "react-native";
+import { twMerge } from "tailwind-merge";
 import * as v from "valibot";
 import { config } from "../../config";
 import { NodeContext } from "../context";
@@ -13,7 +14,7 @@ export const LinkRenderer = memo(
 		const value = useMemo(
 			() => ({
 				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-primary`,
+				textClassName: twMerge(nodeContext.textClassName, "text-primary"),
 			}),
 			[nodeContext],
 		);

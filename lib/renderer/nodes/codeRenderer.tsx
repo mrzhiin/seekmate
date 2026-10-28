@@ -1,5 +1,6 @@
 import { memo, useContext, useMemo } from "react";
 import { Text as RNText } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { NodeContext } from "../context";
 import { useRenderNodeChildren } from "../node";
 import type { ExtractFromPredicate, isQuoteNode } from "../types";
@@ -10,7 +11,7 @@ export const CodeRenderer = memo(
 		const value = useMemo(
 			() => ({
 				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-slate-300`,
+				textClassName: twMerge(nodeContext.textClassName, "text-slate-300"),
 			}),
 			[nodeContext],
 		);

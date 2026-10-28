@@ -1,60 +1,27 @@
-import type { MaterialDesignIconsIconName } from "@react-native-vector-icons/material-design-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as Application from "expo-application";
-import { type ReactNode, useEffect } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStore } from "zustand";
-import { Pressable } from "@/components/pressable";
 import { AuthCheckIn } from "@/components/settings/autoCheckIn";
 import { CheckIn } from "@/components/settings/checkIn";
 import { ClearImageCache } from "@/components/settings/clearImageCache";
+import { Item } from "@/components/settings/Item";
+import { Label } from "@/components/settings/Label";
 import { Link } from "@/components/settings/link";
 import { Locale } from "@/components/settings/locale";
 import { NodeImageApiKey } from "@/components/settings/nodeImageApiKey";
 import { User } from "@/components/settings/user";
-import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
-import { Text } from "@/components/ui/text";
 import { config } from "@/lib/config";
 import { userStore } from "@/store/userStore";
-
-const Label = ({ text }: { text?: string }) => {
-	return <Text className="text-base px-6 py-2">{text}</Text>;
-};
-
-const Item = ({
-	icon,
-	label,
-	subLabel,
-	onPress,
-	right,
-}: {
-	icon?: MaterialDesignIconsIconName;
-	label?: string;
-	subLabel?: string;
-	onPress?: () => void;
-	right?: ReactNode;
-}) => {
-	return (
-		<Pressable
-			className="flex-row px-6 py-4  gap-4 items-center"
-			onPress={onPress}
-		>
-			{icon && <MaterialDesignIcons name="delete-empty" size={32} />}
-			<View className="gap-0.5 flex-1">
-				<Text className="text-lg">{label}</Text>
-				{subLabel && <Text className="text-sm">{subLabel}</Text>}
-			</View>
-			{right}
-			{/* {iconRight && <MaterialDesignIcons name={iconRight} size={24} />} */}
-		</Pressable>
-	);
-};
 
 const Screen = () => {
 	const navigation = useNavigation();
 	const { t } = useTranslation();
 	const userId = useStore(userStore, (state) => state.id);
+	const insets = useSafeAreaInsets();
 
 	useEffect(() => {
 		navigation.setOptions({
@@ -64,33 +31,48 @@ const Screen = () => {
 
 	return (
 		<ScrollView
-			showsHorizontalScrollIndicator={false}
+			className="bg-background"
+			contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
 			showsVerticalScrollIndicator={false}
 		>
-			<View>
-				<User />
-				<AuthCheckIn />
-				<CheckIn />
-				<NodeImageApiKey key={userId} />
-				<ClearImageCache />
-				<Locale />
-				<Label text={t("settings.about")} />
-				<Item
-					label={t("settings.version")}
-					subLabel={Application.nativeApplicationVersion || "-"}
-				/>
-				{config.githubUrl && (
-					<Link
-						uri={config.githubUrl}
-						label={t("settings.github")}
-						subLabel={t("settings.githubSubtitle")}
-					/>
-				)}
-				<Link
-					uri={config.siteUrl}
-					label="NodeSeek"
-					subLabel={t("settings.siteSubtitle")}
-				/>
+			<View className="px-4 pt-4 gap-6">
+				<View className="overflow-hidden rounded-2xl bg-secondary">
+					<User />
+				</View>
+				<View className="gap-2">
+					<Label text={t("settings.preferences")} />
+					<View className="overflow-hidden rounded-2xl bg-secondary">
+						<AuthCheckIn />
+						<CheckIn />
+						<NodeImageApiKey key={userId} />
+						<ClearImageCache />
+						<Locale />
+					</View>
+				</View>
+				<View className="gap-2">
+					<Label text={t("settings.about")} />
+					<View className="overflow-hidden rounded-2xl bg-secondary">
+						<Item
+							icon="information-outline"
+							label={t("settings.version")}
+							subLabel={Application.nativeApplicationVersion || "-"}
+						/>
+						{config.githubUrl && (
+							<Link
+								icon="github"
+								uri={config.githubUrl}
+								label={t("settings.github")}
+								subLabel={t("settings.githubSubtitle")}
+							/>
+						)}
+						<Link
+							icon="web"
+							uri={config.siteUrl}
+							label="NodeSeek"
+							subLabel={t("settings.siteSubtitle")}
+						/>
+					</View>
+				</View>
 			</View>
 		</ScrollView>
 	);

@@ -1,5 +1,6 @@
 import { memo, useContext, useMemo } from "react";
 import { View } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { NodeContext } from "../context";
 import { useRenderNodeChildren } from "../node";
@@ -11,7 +12,10 @@ export const QuoteRenderer = memo(
 		const value = useMemo(
 			() => ({
 				...nodeContext,
-				textClassName: `${nodeContext.textClassName} text-muted-foreground`,
+				textClassName: twMerge(
+					nodeContext.textClassName,
+					"text-muted-foreground",
+				),
 			}),
 			[nodeContext],
 		);

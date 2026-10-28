@@ -9,12 +9,7 @@ export const OriginalSkeleton = () => {
 	const t3 = useResolveClassNames("text-sm");
 
 	return (
-		<MotiView
-			transition={{
-				type: "timing",
-			}}
-			className="py-4 gap-6"
-		>
+		<MotiView className="py-4 gap-6">
 			<MotiView className="px-6">
 				<Skeleton colorMode={colorMode} width={"100%"} height={t1.lineHeight} />
 			</MotiView>

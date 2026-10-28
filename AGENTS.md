@@ -1,6 +1,7 @@
 # AGENTS.md
 
 ## Repo shape
+
 - Single-package Expo + React Native app for Android only.
 - Real boot flow is `index.ts` → `app/index.tsx` → `stack/rootStack.tsx`.
 - `app/` holds screens, `stack/` owns route registration/types, `state/` holds app-wide providers, `lib/` is shared infra, and `store/` is persisted Zustand state.
@@ -10,6 +11,7 @@
 - `app/index.tsx` is provider-heavy and imports `global.css` once at the root. `state/web/index.tsx` also mounts `AutoCheckIn` and `WebRunner` as side effects, so web-service changes can affect app startup.
 
 ## Commands
+
 - Package manager is `pnpm`; there is no workspace file.
 - App scripts:
   - `pnpm start`
@@ -21,6 +23,7 @@
 - Native Cookie/WebView behavior still requires Android device verification.
 
 ## Env and build gotchas
+
 - All app scripts load env through `dotenvx run -f .env.local .env --ignore=MISSING_ENV_FILE -- ...`; Expo default env loading is intentionally disabled.
 - `.env.example` uses `APP_PUBLIC_*` names plus `EXPO_NO_DOTENV=1` and `EXPO_NO_CLIENT_ENV_VARS=1`.
 - If you add or rename an env, update all three: `app.config.ts`, `types/expoExtra.ts`, and `lib/config/index.ts`.
@@ -29,6 +32,7 @@
 - CI release builds (`.github/workflows/android-release.yml`) use pnpm 10 + Node 24. APK and AAB builds run in separate jobs. The workflow uploads both APK and AAB artifacts, but only APKs are attached to the GitHub Release.
 
 ## Native and tooling
+
 - `pnpm prebuild` mutates native projects. `android/` and `ios/` are gitignored here, so treat native output as generated unless the user explicitly wants native files inspected or regenerated.
 - Styling is Tailwind v4 + Uniwind. `app/index.tsx` imports `global.css` once at the root; `metro.config.cjs` generates `types/uniwind-types.d.ts`, and `biome.json` excludes that file.
 - Babel only adds `react-native-worklets/plugin`; keep that in mind before changing animation/worklets setup.

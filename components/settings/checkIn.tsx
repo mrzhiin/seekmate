@@ -17,6 +17,7 @@ export const CheckIn = () => {
 	return (
 		<>
 			<Item
+				icon="dice-multiple-outline"
 				label={t("settings.checkIn.label")}
 				subLabel={
 					isRandom ? t("settings.checkIn.random") : t("settings.checkIn.fixed")
@@ -25,7 +26,7 @@ export const CheckIn = () => {
 					<MaterialDesignIcons
 						name={isRandom ? "dice-multiple" : "dice-5"}
 						size={24}
-						className="text-secondary-foreground mr-3"
+						className="text-secondary-foreground"
 					/>
 				}
 				onPress={() => {

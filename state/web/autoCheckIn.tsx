@@ -1,8 +1,8 @@
 import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ToastAndroid } from "react-native";
 import { useStore } from "zustand";
 import { getAttendanceQueryOptions } from "@/hooks/services/useAttendanceQuery";
+import { ToastAndroid } from "@/lib/toast";
 import { queryClient } from "@/state/query";
 import { appStore } from "@/store/appStore";
 import { userStore } from "@/store/userStore";

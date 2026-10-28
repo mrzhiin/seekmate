@@ -8,6 +8,7 @@ export const Locale = () => {
 
 	return (
 		<Item
+			icon="translate"
 			label={t("settings.locale")}
 			subLabel={i18n.language.toLocaleUpperCase()}
 			onPress={() => {

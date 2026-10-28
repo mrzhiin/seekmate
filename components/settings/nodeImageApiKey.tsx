@@ -22,6 +22,7 @@ export const NodeImageApiKey = () => {
 	return (
 		<>
 			<Item
+				icon="key-outline"
 				label={t("settings.nodeImageApiKey.label")}
 				subLabel={t(
 					apiKey
@@ -33,7 +34,7 @@ export const NodeImageApiKey = () => {
 					trueSheetRef.current?.present();
 				}}
 			/>
-			<TrueSheet ref={trueSheetRef} detents={["auto"]} scrollable={false}>
+			<TrueSheet ref={trueSheetRef} detents={["auto"]}>
 				<View className="px-6 pt-8 pb-6 gap-4">
 					<TextInput
 						value={draftApiKey}

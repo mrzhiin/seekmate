@@ -2,11 +2,12 @@ import { Image } from "expo-image";
 import * as Linking from "expo-linking";
 import { type Ref, useContext, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { ToastAndroid, View } from "react-native";
+import { View } from "react-native";
 import { useStore } from "zustand";
 import { Text } from "@/components/ui/text";
 import { useRashUserQuery } from "@/hooks/services/useUserQuery";
 import { config } from "@/lib/config";
+import { ToastAndroid } from "@/lib/toast";
 import { WebServiceContext } from "@/state/web";
 import { createBanScript } from "@/state/web/scripts";
 import { userStore } from "@/store/userStore";
@@ -123,30 +124,31 @@ export const Avatar = ({
 
 	return (
 		<>
-			<Pressable
-				className="border-border border-2 bg-muted rounded-full relative"
-				style={{
-					width: size,
-					height: size,
-					padding: 1,
-				}}
-				onPress={() => {
-					onPress?.();
+			<View style={{ width: size, height: size }}>
+				<View className="flex-1 rounded-full overflow-hidden">
+					<Pressable
+						className="border-border border-2 bg-muted rounded-full"
+						style={{ flex: 1, padding: 1 }}
+						onPress={() => {
+							onPress?.();
 
-					if (enableMenu && !onPress) {
-						trueSheetMenuRef.current?.present();
-					}
-				}}
-			>
-				<Image
-					source={avatarHref}
-					style={{
-						flex: 1,
-						borderRadius: size,
-					}}
-				/>
+							if (enableMenu && !onPress) {
+								trueSheetMenuRef.current?.present();
+							}
+						}}
+					>
+						<Image
+							source={avatarHref}
+							style={{
+								flex: 1,
+								borderRadius: size,
+							}}
+						/>
+					</Pressable>
+				</View>
 				{typeof user.data?.rank === "number" && showRank && (
 					<View
+						pointerEvents="none"
 						style={{
 							position: "absolute",
 							bottom: 0,
@@ -167,7 +169,7 @@ export const Avatar = ({
 						</Text>
 					</View>
 				)}
-			</Pressable>
+			</View>
 			{enableMenu && <AvatarMenu ref={trueSheetMenuRef} uid={uid} />}
 		</>
 	);

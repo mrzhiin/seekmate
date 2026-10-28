@@ -5,7 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, TextInput, ToastAndroid, View } from "react-native";
+import { ActivityIndicator, TextInput, View } from "react-native";
 import {
 	KeyboardGestureArea,
 	KeyboardStickyView,
@@ -20,6 +20,7 @@ import { TrueSheetMenu } from "@/components/trueSheet";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import { Text } from "@/components/ui/text";
 import { convertFromStateToMarkdown } from "@/lib/renderer/utils";
+import { ToastAndroid } from "@/lib/toast";
 import type { ScreenName } from "@/stack/screenName";
 import type { ScreenParams } from "@/stack/screenParams";
 import { WebServiceContext } from "@/state/web";

@@ -1,5 +1,6 @@
 import { memo, useContext, useMemo } from "react";
 import { Text as RNText } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { NodeContext } from "../context";
 import { useRenderNodeChildren } from "../node";
 import type { ExtractFromPredicate, isHeadingNode } from "../types";
@@ -29,7 +30,7 @@ export const HeadingRenderer = memo(
 
 			return {
 				...nodeContext,
-				textClassName: `${nodeContext.textClassName} ${c}`.trim(),
+				textClassName: twMerge(nodeContext.textClassName, c),
 			};
 		}, [nodeContext, node.tag]);
 

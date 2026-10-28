@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ToastAndroid } from "react-native";
+import { Alert } from "react-native";
 import { Image as UIImage } from "@/components/ui/image";
+import { ToastAndroid } from "@/lib/toast";
 import { Item } from "./Item";
 
 export const ClearImageCache = () => {
@@ -73,6 +74,7 @@ export const ClearImageCache = () => {
 
 	return (
 		<Item
+			icon="image-outline"
 			label={t("settings.clearImageCache.label")}
 			subLabel={t("settings.clearImageCache.description")}
 			onPress={handlePressClearImageCache}

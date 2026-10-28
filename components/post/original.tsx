@@ -3,7 +3,7 @@ import relativeTime from "dayjs/plugin/relativeTime.js";
 import { produce } from "immer";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ToastAndroid, View } from "react-native";
+import { View } from "react-native";
 import { useStore } from "zustand";
 import { Text } from "@/components/ui/text";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/hooks/services/usePostOriginalQuery";
 import type { PostPageData } from "@/lib/parser";
 import { queryClient } from "@/lib/query";
+import { ToastAndroid } from "@/lib/toast";
 import { WebServiceContext } from "@/state/web";
 import {
 	createAppreciatScript,
@@ -50,11 +51,11 @@ export const Original = ({
 	}, [data?.createdAt]);
 
 	return (
-		<View className="pt-4 pb-2 gap-1.5 border-b border-border">
-			<Text className="px-4 text-xl" selectable>
+		<View className="gap-4 border-b border-border pb-3 pt-5">
+			<Text className="px-4 text-xl font-semibold" selectable>
 				{data.title}
 			</Text>
-			<View className="pl-4 pr-2 flex-row items-center gap-3">
+			<View className="flex-row items-center gap-3 px-4">
 				<Avatar
 					uid={data.author.uid}
 					size={40}
@@ -62,31 +63,29 @@ export const Original = ({
 					enableMenu={false}
 					onPress={onAvatarPress}
 				/>
-				<View className="flex-1 items-center flex-row gap-x-2 gap-y-1 flex-wrap">
-					<Text className="text-base"> {data.author.name}</Text>
-					<View className="rounded-2xl px-2 py-1 bg-primary justify-center items-center">
-						<Text className="text-xs text-primary-foreground">
-							{t("post.original.poster")}
+				<View className="flex-1 gap-1">
+					<View className="flex-row flex-wrap items-center gap-2">
+						<Text className="text-base font-semibold">{data.author.name}</Text>
+						<View className="rounded-full bg-accent px-2 py-0.5">
+							<Text className="text-xs text-accent-foreground">
+								{t("post.original.poster")}
+							</Text>
+						</View>
+					</View>
+					<View className="flex-row flex-wrap items-center gap-x-2 gap-y-1">
+						<Text className="text-secondary-foreground dark:text-muted-foreground">
+							{dateDisplay}
+						</Text>
+						<Text className="text-secondary-foreground dark:text-muted-foreground">
+							{timeDisplay}
+						</Text>
+						<Text className="text-secondary-foreground dark:text-muted-foreground">
+							{relativeDisplay}
 						</Text>
 					</View>
 				</View>
 			</View>
-			<View className="px-4 flex-row items-center  gap-2">
-				<Text className="text-muted-foreground">{dateDisplay}</Text>
-				{/* <MaterialDesignIcons
-					size={12}
-					name="circle-medium"
-					className="text-muted-foreground"
-				/> */}
-				<Text className="text-muted-foreground">{timeDisplay}</Text>
-				<MaterialDesignIcons
-					size={14}
-					name="circle-small"
-					className="text-muted-foreground"
-				/>
-				<Text className="text-muted-foreground">{relativeDisplay}</Text>
-			</View>
-			<View className="px-4 py-2">
+			<View className="px-4">
 				{data.contentMarkdown && (
 					<ContentView
 						markdown={data.contentMarkdown}
@@ -151,7 +150,7 @@ const Interactions = ({
 	};
 
 	return (
-		<View className="px-2 gap-2 flex-row">
+		<View className="flex-row gap-2 px-4">
 			{[
 				{
 					icon: data.interactions.isUpvoted
@@ -268,17 +267,19 @@ const Interactions = ({
 				return (
 					<Pressable
 						key={x.icon}
-						className="flex-1 py-2 rounded-xl"
+						className="min-h-12 flex-1 items-center justify-center rounded-full"
 						onPress={x.onPress}
 						disabled={x.disabled}
 					>
-						<View className="gap-0.5 items-center">
-							<Text className="text-muted-foreground">{x.label}</Text>
+						<View className="flex-row items-center gap-2">
 							<MaterialDesignIcons
 								name={x.icon}
 								size={20}
-								className="text-muted-foreground"
+								className="text-secondary-foreground dark:text-muted-foreground"
 							/>
+							<Text className="text-secondary-foreground dark:text-muted-foreground">
+								{x.label}
+							</Text>
 						</View>
 					</Pressable>
 				);

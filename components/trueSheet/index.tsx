@@ -3,7 +3,7 @@ import {
 	type TrueSheetProps as RNTrueSheetProps,
 } from "@lodev09/react-native-true-sheet";
 import type { MaterialDesignIconsIconName } from "@react-native-vector-icons/material-design-icons";
-import type { Ref } from "react";
+import { type ComponentRef, type Ref, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { useResolveClassNames } from "uniwind";
 import { Pressable } from "../pressable";
@@ -51,9 +51,17 @@ export const TrueSheetMenu = ({
 		onPress: () => void;
 	}[];
 }) => {
+	const scrollableRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
 	return (
-		<TrueSheet ref={ref} scrollable={false} detents={["auto"]} {...rest}>
+		<TrueSheet
+			ref={ref}
+			detents={["auto"]}
+			{...rest}
+			scrollableRef={scrollableRef}
+		>
 			<ScrollView
+				ref={scrollableRef}
 				style={{
 					flexGrow: 0,
 					flexShrink: 1,

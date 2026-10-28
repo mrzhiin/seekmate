@@ -1,4 +1,6 @@
 allowBuilds:
-  '@sentry/cli': true
+  "@sentry/cli": true
   esbuild: true
   msgpackr-extract: true
+minimumReleaseAgeExclude:
+  - "@lodev09/react-native-true-sheet@4.0.0"

@@ -13,7 +13,7 @@ export const ListItemRenderer = memo(
 		return (
 			<View className="flex-row gap-2 pl-4">
 				{node.children[0]?.type === TextNode.getType() ? (
-					<RNText className={`${nodeContext.textClassName}`} selectable>
+					<RNText className={nodeContext.textClassName} selectable>
 						{nodeContext.listType === "bullet" ? (
 							<MaterialDesignIcons name="circle-medium" size={14} />
 						) : (

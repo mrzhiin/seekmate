@@ -4,11 +4,12 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ToastAndroid, View } from "react-native";
+import { View } from "react-native";
 import { useStore } from "zustand";
 import { Pressable } from "@/components/pressable";
 import { Text } from "@/components/ui/text";
 import type { Comment as CommentType } from "@/lib/parser";
+import { ToastAndroid } from "@/lib/toast";
 import { WebServiceContext } from "@/state/web";
 import { createAppreciatScript, createUpvoteScript } from "@/state/web/scripts";
 import { userStore } from "@/store/userStore";
@@ -74,7 +75,7 @@ export const Comment = observer(
 		};
 
 		return (
-			<View className="flex-row py-4 px-4 gap-2">
+			<View className="flex-row gap-3 px-4 py-4">
 				<Avatar
 					uid={authorUid}
 					size={40}
@@ -91,50 +92,49 @@ export const Comment = observer(
 						<View className="flex-1 gap-1">
 							<View className="flex-1 flex-row items-center gap-3">
 								<View className="flex-1 items-center flex-row gap-x-2 gap-y-1 flex-wrap">
-									<Text className="text-base">{authorName}</Text>
+									<Text className="text-base font-semibold">{authorName}</Text>
 									<Text className="text-muted-foreground">#{floor}</Text>
 									{isPoster && (
-										<View className="rounded-xl px-1.5 py-0.5 bg-primary justify-center items-center">
-											<Text className="text-xs text-primary-foreground">
+										<View className="rounded-full bg-accent px-2 py-0.5">
+											<Text className="text-xs text-accent-foreground">
 												{t("post.original.poster")}
 											</Text>
 										</View>
 									)}
 								</View>
 							</View>
-							<View className="flex-row items-center gap-2">
-								<Text className="text-muted-foreground">{dateDisplay}</Text>
-								{/* <MaterialDesignIcons
-									size={14}
-									name="circle-small"
-									className="text-muted-foreground"
-								/> */}
-								<Text className="text-muted-foreground">{timeDisplay}</Text>
-								<MaterialDesignIcons
-									size={14}
-									name="circle-small"
-									className="text-muted-foreground"
-								/>
-								<Text className="text-muted-foreground">{relativeDisplay}</Text>
-								{/* <View className="flex-1 justify-end flex-row items-center gap-1">
-							<Text className="text-muted-foreground">#{floor}</Text>
-						</View> */}
+							<View className="flex-row flex-wrap items-center gap-x-2 gap-y-1">
+								<Text className="text-secondary-foreground dark:text-muted-foreground">
+									{dateDisplay}
+								</Text>
+								<Text className="text-secondary-foreground dark:text-muted-foreground">
+									{timeDisplay}
+								</Text>
+								<Text className="text-secondary-foreground dark:text-muted-foreground">
+									{relativeDisplay}
+								</Text>
 							</View>
 						</View>
-						<View className="flex-row items-center">
-							<Pressable
-								className="rounded-full justify-center items-center"
-								style={{
-									height: 40,
-									aspectRatio: 1,
-								}}
-								onPress={() => {
-									props.onReply?.();
-								}}
-							>
-								<MaterialDesignIcons name="reply-outline" size={24} />
-							</Pressable>
-						</View>
+						{userId ? (
+							<View className="mr-1 flex-row items-center">
+								<View className="overflow-hidden rounded-full bg-secondary">
+									<Pressable
+										accessibilityRole="button"
+										accessibilityLabel={t("post.actions.reply")}
+										className="items-center justify-center"
+										style={{
+											height: 40,
+											aspectRatio: 1,
+										}}
+										onPress={() => {
+											props.onReply?.();
+										}}
+									>
+										<MaterialDesignIcons name="reply-outline" size={24} />
+									</Pressable>
+								</View>
+							</View>
+						) : null}
 					</View>
 					<ContentView markdown={contentMarkdown} textClassName="text-base" />
 					<View className="flex-row -ml-2">

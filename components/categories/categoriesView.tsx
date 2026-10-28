@@ -1,5 +1,5 @@
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
-import { useRef, useState } from "react";
+import { type ComponentRef, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { useStore } from "zustand";
@@ -15,7 +15,7 @@ import { TrueSheetMenu } from "../trueSheet";
 export const CategoriesView = () => {
 	const navigation = useNavigation();
 	const { t } = useTranslation();
-	const scrollViewRef = useRef<ScrollView>(null);
+	const scrollViewRef = useRef<ComponentRef<typeof ScrollView>>(null);
 	const { data, refetch } = useCategoriesSuspenseQuery();
 	const { isRefreshing, refresh } = useRefresh(refetch);
 	const trueSheetMenuRef = useRef<TrueSheetMenu>(null);

@@ -36,32 +36,35 @@ export const Rank = ({
 	}
 
 	return (
-		<View className="bg-muted p-4 items-center rounded-xl flex-row gap-4">
-			<MaterialDesignIcons name="trophy" size={32} color={"#FF9800"} />
-			<View className="flex-1 gap-1">
-				<Text>{t("mine.rank.currentLevel", { level: data.rank })}</Text>
-				<View
-					style={{
-						height: 8,
-					}}
-					className="rounded bg-muted-foreground"
-				>
+		<View className="flex-row items-center gap-3 px-1 py-4">
+			<View className="h-12 w-12 items-center justify-center rounded-full bg-muted">
+				<MaterialDesignIcons
+					name="trophy"
+					size={26}
+					className="text-amber-500"
+				/>
+			</View>
+			<View className="flex-1 gap-2">
+				<Text className="font-semibold">
+					{t("mine.rank.currentLevel", { level: data.rank })}
+				</Text>
+				<View className="h-1.5 overflow-hidden rounded-full bg-border">
 					<View
 						style={{
 							width: `${progress || 0}%`,
 							maxWidth: "100%",
 							height: "100%",
 						}}
-						className="rounded bg-primary"
+						className="rounded-full bg-primary"
 					/>
 				</View>
-				<View className="flex-row justify-between items-center">
-					<Text className="text-xs">{t("mine.rank.nextLevelDistance")}</Text>
-					<View className="flex-row items-center">
-						<Text className="text-xs">{data.coinCount}</Text>
-						<MaterialDesignIcons name="slash-forward" size={12} />
-						<Text className="text-xs">{next || "-"}</Text>
-					</View>
+				<View className="flex-row flex-wrap items-center justify-between gap-x-2">
+					<Text className="text-xs text-muted-foreground">
+						{t("mine.rank.nextLevelDistance")}
+					</Text>
+					<Text className="text-xs text-muted-foreground">
+						{data.coinCount} / {next || "-"}
+					</Text>
 				</View>
 			</View>
 		</View>

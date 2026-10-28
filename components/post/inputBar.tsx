@@ -1,16 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
-import {
-	type Ref,
-	useContext,
-	useImperativeHandle,
-	useRef,
-	useState,
-} from "react";
+import { type Ref, useContext, useImperativeHandle, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, TextInput, ToastAndroid, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as v from "valibot";
 import { useCSSVariableString } from "@/hooks/useStyle";
+import { ToastAndroid } from "@/lib/toast";
 import { WebServiceContext } from "@/state/web";
 import { createPostCommentScript } from "@/state/web/scripts";
 import { Pressable } from "../pressable";
@@ -34,7 +29,6 @@ export const InputBar = ({
 	const { t } = useTranslation();
 	const [isLoading, setIsLoading] = useState(false);
 	const [text, setText] = useState("");
-	const inputRef = useRef<TextInput>(null);
 	const insets = useSafeAreaInsets();
 	const webServiceContext = useContext(WebServiceContext);
 
@@ -106,7 +100,6 @@ export const InputBar = ({
 				}}
 			>
 				<TextInput
-					ref={inputRef}
 					value={text}
 					onChangeText={(e) => {
 						setText(e);
@@ -115,7 +108,7 @@ export const InputBar = ({
 					numberOfLines={4}
 					autoFocus={false}
 					placeholder={t("post.inputBar.placeholder")}
-					className="font-sans text-base text-foreground flex-1 pl-2"
+					className="text-base text-foreground flex-1 pl-2"
 					readOnly={isLoading}
 				/>
 				<View className="flex-row items-center p-2 rounded-full">

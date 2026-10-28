@@ -386,22 +386,26 @@ export const PostView = ({
 			title: "",
 			headerRight: () => {
 				return (
-					<Pressable
-						className="-mr-2 rounded-full justify-center items-center"
-						style={{
-							height: 40,
-							aspectRatio: 1,
-						}}
-						onPress={() => {
-							trueSheetRef.current?.present();
-						}}
-					>
-						<MaterialDesignIcons name="dots-vertical" size={24} />
-					</Pressable>
+					<View className="overflow-hidden rounded-full bg-secondary">
+						<Pressable
+							accessibilityRole="button"
+							accessibilityLabel={t("post.menu.more")}
+							className="items-center justify-center"
+							style={{
+								height: 48,
+								aspectRatio: 1,
+							}}
+							onPress={() => {
+								trueSheetRef.current?.present();
+							}}
+						>
+							<MaterialDesignIcons name="dots-vertical" size={24} />
+						</Pressable>
+					</View>
 				);
 			},
 		});
-	}, [navigation]);
+	}, [navigation, t]);
 
 	return (
 		<View
@@ -462,16 +466,9 @@ export const PostView = ({
 							isFetching={isFetching}
 						/>
 					}
-					ItemSeparatorComponent={() => {
-						return (
-							<View
-								className="bg-border"
-								style={{
-									height: 1,
-								}}
-							/>
-						);
-					}}
+					ItemSeparatorComponent={() => (
+						<View className="ml-17 h-px bg-border opacity-50" />
+					)}
 					renderScrollComponent={memoList}
 				/>
 				{userId ? (

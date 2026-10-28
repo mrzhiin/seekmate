@@ -99,22 +99,28 @@ export const MineView = ({
 
 	return (
 		<MineRefreshContext.Provider value={contextValue}>
-			<View className="items-center gap-4">
+			<View className="items-center gap-4 px-4 pt-2">
 				<Avatar size={128} uid={data.uid} showRank={false} />
-				<View className="gap-1 items-center">
-					<Text className="text-2xl">{data.name}</Text>
-					<View className="flex-row items-center">
-						<View className="flex-1 flex-row gap-1.5 items-center justify-end">
-							<MaterialDesignIcons name="food-drumstick" size={14} />
-							<Text>{data.coinCount}</Text>
-						</View>
-						<MaterialDesignIcons name="circle-small" size={24} />
-						<View className="flex-1">
-							<Text>{t("mine.profile.level", { level: data.rank })}</Text>
-						</View>
+				<View className="items-center gap-2">
+					<Text className="text-2xl font-semibold text-center">
+						{data.name}
+					</Text>
+					<View className="flex-row items-center gap-2 rounded-full bg-muted px-3 py-1">
+						<MaterialDesignIcons
+							name="food-drumstick"
+							size={14}
+							className="text-muted-foreground"
+						/>
+						<Text className="text-sm text-muted-foreground">
+							{data.coinCount}
+						</Text>
+						<View className="h-3 w-px bg-border" />
+						<Text className="text-sm text-muted-foreground">
+							{t("mine.profile.level", { level: data.rank })}
+						</Text>
 					</View>
 				</View>
-				<View className="flex-row">
+				<View className="flex-row self-stretch overflow-hidden rounded-xl">
 					{[
 						{
 							key: "postCount",
@@ -140,25 +146,25 @@ export const MineView = ({
 								goWebview("#/collections");
 							},
 						},
-					].map((x, idx, arr) => {
+					].map((x) => {
 						return (
-							<View key={x.key} className="flex-1">
-								<Pressable onPress={x.onPress}>
-									<View
-										className={`items-center gap-1 ${idx === arr.length - 1 ? "" : "border-r border-border"}`}
-									>
-										<Text className="text-sm">{x.value || "-"}</Text>
-										<Text className="text-sm text-muted-foreground">
-											{x.label}
-										</Text>
-									</View>
-								</Pressable>
-							</View>
+							<Pressable
+								key={x.key}
+								className="flex-1 items-center gap-1 px-2 py-3"
+								accessibilityRole="button"
+								accessibilityLabel={`${x.label}: ${x.value ?? "-"}`}
+								onPress={x.onPress}
+							>
+								<Text className="text-base font-semibold">
+									{x.value ?? "-"}
+								</Text>
+								<Text className="text-sm text-muted-foreground">{x.label}</Text>
+							</Pressable>
 						);
 					})}
 				</View>
 			</View>
-			<View className="mt-4 mx-4 gap-2">
+			<View className="mx-4 mt-4 gap-2 pb-4">
 				<Rank user={data} />
 				<View className="flex-row gap-2">
 					<Attendance />

@@ -45,7 +45,6 @@
 
 		/* Light theme variables */
 		@variant light {
-			/* biome-ignore lint: @variant scopes same properties */
 			--color-background: oklch(1 0 0);
 			--color-foreground: oklch(0.3211 0 0);
 			--color-card: oklch(1 0 0);

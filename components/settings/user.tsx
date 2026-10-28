@@ -25,6 +25,7 @@ export const User = () => {
 	if (userId) {
 		return (
 			<Item
+				icon="account-outline"
 				label={t("settings.user.logout")}
 				subLabel={t("settings.user.logoutDescription")}
 				right={<Avatar uid={userId} size={48} />}
@@ -47,6 +48,7 @@ export const User = () => {
 
 	return (
 		<Item
+			icon="account-outline"
 			label={t("settings.user.signIn")}
 			subLabel={t("settings.user.signInDescription")}
 			onPress={() => {

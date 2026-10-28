@@ -1,6 +1,7 @@
 import { TEXT_TYPE_TO_FORMAT, type TextFormatType } from "lexical";
 import { memo, type ReactNode, useContext, useMemo } from "react";
 import { Text as RNText } from "react-native";
+import { twMerge } from "tailwind-merge";
 import { NodeContext } from "../context";
 import type { ExtractFromPredicate, isTextNode } from "../types";
 import {
@@ -78,7 +79,7 @@ export const TextRenderer = memo(
 				classNames.push(formatClassNameMap.get(textType) ?? "");
 			}
 
-			return classNames.filter(Boolean).join(" ");
+			return twMerge(classNames);
 		}, [node.format, nodeContext.textClassName]);
 
 		const content = useMemo(

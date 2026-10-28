@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ToastAndroid, View } from "react-native";
+import { View } from "react-native";
 import { useMineRefreshContext } from "@/components/mine/mineView";
 import { Text } from "@/components/ui/text";
 import { useAttendanceQuery } from "@/hooks/services/useAttendanceQuery";
+import { ToastAndroid } from "@/lib/toast";
 import { WebServiceContext } from "@/state/web";
 import { createAttendanceScript } from "@/state/web/scripts";
 import { CheckInType } from "@/store/appStore";

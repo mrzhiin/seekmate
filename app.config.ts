@@ -8,7 +8,7 @@ import {
 import * as v from "valibot";
 import { ExpoExtraSchema } from "./types/expoExtra";
 
-const VersionCode = 18;
+const VersionCode = 19;
 const abis =
 	typeof process.env.APP_RELEASE_ABIS === "string" &&
 	process.env.APP_RELEASE_ABIS.length

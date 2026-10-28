@@ -2,34 +2,36 @@
 
 [English](./README.md) | [简体中文](./README.zh-Hans.md)
 
-SeekMate is an **unofficial NodeSeek client for Android** built with **Expo + React Native**.
+SeekMate is an **unofficial NodeSeek client for Android**, built with Expo and React Native. Browse and participate in the community with a mobile-friendly experience.
 
-It provides a mobile-friendly browsing experience with features such as topic browsing, section switching, search, login, profile viewing, and daily check-in.
+## Screenshots
+
+![SeekMate home feed, categories, signed-out profile, and settings in light and dark modes](./docs/images/overview.webp)
+
+*Screenshots from version 0.0.18; the current interface may differ.*
 
 ## Features
 
-- Home feed: view the latest topics and latest replies
-- Section browsing: quickly access topic lists by category
-- Topic details: read posts and comments, with support for pagination, pull-to-refresh, and load more
-- Search: supports topic search and recent search history
-- Profile: view avatar, level, coins, and statistics for topics, comments, and favorites
-- Check-in: supports both manual and automatic daily check-in
-- Notifications: view unread alerts and jump to the web notification page
+- **Browse** the latest topics and replies, or explore posts by category.
+- **Read** posts and comments with pagination, pull-to-refresh, and load more.
+- **Publish** posts with a rich-text editor and optional NodeImage uploads.
+- **Search** posts and revisit recent searches.
+- **View your profile**, account statistics, and recently viewed posts.
+- **Check in** manually or automatically when the app launches.
+- **Check notifications** for unread alerts and open the notification page on the NodeSeek website.
 
 ## Platform Support
 
-Currently supports **Android only**.
+Available on **Android**.
 
 ## Download
 
 - [Google Play](https://play.google.com/store/apps/details?id=com.angiin.seekmate)
-- Closed testing group: [SeekMate Testing on Google Groups](https://groups.google.com/g/seekmate-testing)
-- If the Google Play listing is not yet available to your account, join the closed testing group first and then access the app from Google Play.
+- [GitHub Releases](https://github.com/mrzhiin/seekmate/releases) (APK)
 
 ## Notes
 
-- This project is an **unofficial NodeSeek client**
-- The image-hosting API key is persisted locally without remote synchronization. User settings, including the key, are reset on every successful login (including re-login) and on logout.
+Image uploads require a NodeImage API key, which can be configured in settings. The key is stored locally and sent to NodeImage when uploading; it is not synchronized remotely. It is cleared whenever you log in successfully (including re-login) or log out.
 
 ## License
 

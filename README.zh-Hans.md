@@ -2,34 +2,36 @@
 
 [English](./README.md) | [简体中文](./README.zh-Hans.md)
 
-SeekMate 是一个基于 **Expo + React Native** 构建的 **Android 端 NodeSeek 非官方客户端**。
+SeekMate 是一款基于 Expo 和 React Native 构建的 **Android 端 NodeSeek 非官方客户端**，让你在移动设备上更方便地浏览和参与社区。
 
-它提供更适合移动端的浏览体验，支持帖子浏览、版块切换、搜索、登录、个人信息查看、签到等功能。
+## 界面预览
+
+![SeekMate 浅色和深色模式下的首页、版块、未登录个人页面和设置界面](./docs/images/overview.webp)
+
+*截图来自 0.0.18 版本，当前界面可能有所不同。*
 
 ## 功能特性
 
-- 首页信息流：查看最新主题与最新回复
-- 版块浏览：按分类快速进入对应帖子列表
-- 帖子详情：查看正文、评论，并支持分页 / 下拉刷新 / 加载更多
-- 搜索：支持帖子搜索与最近搜索记录
-- 个人中心：查看头像、等级、硬币、主题帖 / 评论 / 收藏统计
-- 签到：支持手动签到与自动签到
-- 通知入口：查看未读提醒并跳转网页通知页
+- **浏览帖子**：查看最新主题和回复，或按版块浏览。
+- **阅读内容**：查看正文和评论，支持分页、下拉刷新和加载更多。
+- **发布帖子**：使用富文本编辑器，可通过 NodeImage 上传图片。
+- **搜索内容**：搜索帖子并查看最近搜索记录。
+- **个人中心**：查看账户统计和最近浏览的帖子。
+- **每日签到**：手动签到，或在应用启动时自动签到。
+- **查看通知**：查看未读提醒并跳转至 NodeSeek 网页。
 
 ## 平台支持
 
-当前仅支持 **Android**。
+目前支持 **Android**。
 
 ## 下载
 
 - [Google Play](https://play.google.com/store/apps/details?id=com.angiin.seekmate)
-- 封闭测试群组：[SeekMate Testing on Google Groups](https://groups.google.com/g/seekmate-testing)
-- 如果你的 Google Play 账号暂时无法看到应用，请先加入封闭测试群组，再通过 Google Play 访问应用。
+- [GitHub Releases](https://github.com/mrzhiin/seekmate/releases)（APK）
 
 ## 说明
 
-- 本项目为 **NodeSeek 非官方客户端**
-- 图床 API Key 填写后仅在本机持久化，不进行远端同步。每次成功登录（包括重新登录）或退出登录都会重置用户配置，清空 Key。
+上传图片前需在设置中配置 NodeImage API Key。Key 保存在本机，上传时会发送给 NodeImage，但不会远程同步；每次成功登录（包括重新登录）或退出登录时都会清空。
 
 ## 许可证
 

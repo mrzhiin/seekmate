@@ -15,7 +15,7 @@ const RE_VIEWS = /(\d+) views/;
 const RE_COMMENTS = /(\d+) comments/;
 const RE_PAGE_NUM = /(\d+)/;
 const RE_PAGE_ELLIPSIS = /\.\.(\d+)/;
-const RE_NEXT_PAGE = /\/page-(\d+)/;
+const RE_NEXT_PAGE = /(?:\/page-|[?&]page=)(\d+)/;
 
 const uidFromHref = (href: string) => href.match(RE_UID)?.[1] ?? "";
 const slugFromHref = (href: string) => href.match(RE_SLUG)?.[1] ?? "";
@@ -202,15 +202,16 @@ function extractPagination(
 	const prevHasNoLink = $(".pager-prev a").length === 0;
 	const nextHref = str($(".pager-next a").attr("href"));
 	const ellipsis = $(".ellipsis").closest("[class*='pager']");
-	const totalPages = ellipsis.length
-		? int(ellipsis.text().match(RE_PAGE_ELLIPSIS)?.[1], 1)
-		: 1;
+	const nextPage = int(nextHref.match(RE_NEXT_PAGE)?.[1]);
+	const totalPages = Math.max(
+		currentPage,
+		nextPage,
+		int(ellipsis.text().match(RE_PAGE_ELLIPSIS)?.[1], 1),
+	);
 	return {
 		currentPage,
 		totalPages,
 		hasPrev: !prevHasNoLink && currentPage > 1,
-		hasNext:
-			nextHref.match(RE_NEXT_PAGE)?.[1] !== undefined ||
-			currentPage < totalPages,
+		hasNext: nextPage > currentPage || currentPage < totalPages,
 	};
 }

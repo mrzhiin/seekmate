@@ -1,7 +1,6 @@
 import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import { useObservable } from "@legendapp/state/react";
 import { useNavigation } from "@react-navigation/native";
-import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import {
@@ -24,6 +23,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { useStore } from "zustand";
 import { AvatarMenu } from "@/components/avatar";
 import { BackPrevent } from "@/components/backPrevent";
+import { ErrorFallback } from "@/components/errorFallback";
 import { ListFooter } from "@/components/list/footer";
 import { Comment } from "@/components/post/comment";
 import { InputBar } from "@/components/post/inputBar";
@@ -33,19 +33,25 @@ import {
 	type PostScrollPosition,
 	setPostScrollPosition,
 } from "@/components/post/scrollMemory";
+import { getPostScrollRestore } from "@/components/post/scrollRestore";
 import { Pressable } from "@/components/pressable";
+import { Spinner } from "@/components/spinner";
 import { TrueSheetMenu } from "@/components/trueSheet";
 import { MaterialDesignIcons } from "@/components/ui/materialDesignIcons";
 import {
 	fetchPostCommentsPage,
-	type PostInfiniteCommentsPage,
-	postInfiniteCommentsQueryKey,
 	usePostInfiniteCommentsQuery,
 } from "@/hooks/services/usePostInfiniteCommentsQuery";
+import { usePostOriginalQueryKey } from "@/hooks/services/usePostOriginalQuery";
 import { useRefresh } from "@/hooks/useRefresh";
 import { config } from "@/lib/config";
 import type { Comment as CommentType, PostPageData } from "@/lib/parser";
+import {
+	postInfiniteCommentsQueryKey,
+	refreshPostCommentsTail,
+} from "@/lib/query/postComments";
 import { Sentry } from "@/lib/sentry";
+import { ToastAndroid } from "@/lib/toast";
 import { userStore } from "@/store/userStore";
 
 const VirtualizedListScrollView = forwardRef<
@@ -55,12 +61,97 @@ const VirtualizedListScrollView = forwardRef<
 	return <KeyboardChatScrollView {...props} ref={ref} />;
 });
 
-export const PostView = ({
-	id,
-	postData,
-}: {
+type PostViewProps = {
 	id: number;
 	postData: PostPageData;
+};
+
+type PostComment = CommentType & { currentPage: number; postId: number };
+
+export const PostView = ({ id, postData }: PostViewProps) => {
+	const [savedPosition] = useState(() => getPostScrollPosition(id));
+	const commentsQuery = usePostInfiniteCommentsQuery({
+		postId: id,
+		initialPage: postData,
+	});
+	const { data, fetchNextPage, isFetching, isError } = commentsQuery;
+
+	const comments = useMemo(() => {
+		const items = data.pages.flatMap((page) =>
+			page.comments.map((comment) => ({
+				...comment,
+				currentPage: page.pagination.currentPage,
+				postId: page.id,
+			})),
+		);
+		return Array.from(new Map(items.map((item) => [item.id, item])).values());
+	}, [data.pages]);
+
+	const restore = useMemo(
+		() =>
+			getPostScrollRestore(
+				savedPosition,
+				comments,
+				data.pages.at(-1)?.pagination ?? postData.pagination,
+			),
+		[savedPosition, comments, data.pages, postData.pagination],
+	);
+	const [initialScroll, setInitialScroll] = useState(() =>
+		restore.needsMorePages ? undefined : restore,
+	);
+
+	useEffect(() => {
+		if (initialScroll) return;
+		if (!restore.needsMorePages) {
+			setInitialScroll(restore);
+		} else if (!isFetching && !isError) {
+			void fetchNextPage({ cancelRefetch: false });
+		}
+	}, [initialScroll, restore, isFetching, isError, fetchNextPage]);
+
+	if (!initialScroll) {
+		if (isError && !isFetching) {
+			return (
+				<ErrorFallback
+					onReset={() => {
+						if (commentsQuery.isFetchNextPageError) {
+							void fetchNextPage({ cancelRefetch: false });
+						} else {
+							void commentsQuery.refetch();
+						}
+					}}
+				/>
+			);
+		}
+		return (
+			<View className="flex-1 justify-center items-center">
+				<Spinner />
+			</View>
+		);
+	}
+
+	// 补齐分页后才挂载列表，初始恢复参数在本次阅读期间保持不变。
+	return (
+		<PostViewContent
+			id={id}
+			postData={postData}
+			comments={comments}
+			commentsQuery={commentsQuery}
+			initialScroll={initialScroll}
+		/>
+	);
+};
+
+const PostViewContent = ({
+	id,
+	postData,
+	comments,
+	commentsQuery,
+	initialScroll,
+}: PostViewProps & {
+	comments: PostComment[];
+	commentsQuery: ReturnType<typeof usePostInfiniteCommentsQuery>;
+	initialScroll: ReturnType<typeof getPostScrollRestore>;
 }) => {
 	const navigation = useNavigation();
 	const userId = useStore(userStore, (s) => s.id);
@@ -77,17 +168,13 @@ export const PostView = ({
 		avatarMenuRef.current?.present();
 	}, []);
 	const legendListRef = useRef<LegendListRef | null>(null);
-	const headerSizeRef = useRef<number | undefined>(undefined);
+	const listReadyRef = useRef(false);
+	// 首次进入也等待布局完成，避免正文出现前先露出页脚。
+	const [isListVisible, setIsListVisible] = useState(false);
 	const stickyHeight = useSharedValue(0);
-	const commentsById$ = useObservable<
-		Record<
-			number,
-			CommentType & {
-				currentPage: number;
-				postId: number;
-			}
-		>
-	>({});
+	const commentsById$ = useObservable<Record<number, PostComment>>(() =>
+		Object.fromEntries(comments.map((comment) => [comment.id, comment])),
+	);
 
 	const {
 		data,
@@ -96,113 +183,52 @@ export const PostView = ({
 		isFetchingNextPage,
 		refetch,
 		isFetching,
-	} = usePostInfiniteCommentsQuery({
-		postId: id,
-	});
+		isError,
+		isFetchNextPageError,
+	} = commentsQuery;
+	const originalQueryKey = usePostOriginalQueryKey({ postId: id });
 
 	const refreshFirstPage = useCallback(async () => {
 		const queryKey = postInfiniteCommentsQueryKey(id, userId);
 
-		queryClient.setQueryData<typeof data>(queryKey, (oldData) => {
-			if (!oldData) {
-				return oldData;
-			}
+		try {
+			await queryClient.cancelQueries({ queryKey });
+			await queryClient.refetchQueries(
+				{ queryKey: originalQueryKey, exact: true },
+				{ throwOnError: true },
+			);
+			const refreshedPost =
+				queryClient.getQueryData<PostPageData>(originalQueryKey);
+			if (!refreshedPost) return;
 
-			return {
-				...oldData,
-				pages: oldData.pages.slice(0, 1),
-				pageParams: oldData.pageParams.slice(0, 1),
-			};
-		});
-
-		await refetch();
-	}, [id, userId, queryClient, refetch]);
+			queryClient.setQueryData<typeof data>(queryKey, {
+				pages: [refreshedPost],
+				pageParams: [{ currentPage: 1 }],
+			});
+		} catch (error) {
+			Sentry.captureException(error);
+			ToastAndroid.show(t("errorFallback.message"), ToastAndroid.LONG);
+		}
+	}, [id, userId, queryClient, originalQueryKey, t]);
 
 	const { isRefreshing, refresh } = useRefresh(refreshFirstPage);
 
-	const comments = useMemo(() => {
-		const _comments = data?.pages.flatMap((x) =>
-			x.comments.map((c) => ({
-				...c,
-				currentPage: x.pagination.currentPage,
-				postId: x.id,
-			})),
-		);
-
-		if (_comments) {
-			const commentsMap = new Map(_comments.map((x) => [x.id, x]));
-			return Array.from(commentsMap.values());
-		} else {
-			return [];
-		}
-	}, [data?.pages]);
-
 	const commentsRef = useRef(comments);
 	commentsRef.current = comments;
-
-	// 首次挂载前固定恢复方式，避免布局后切换初始位置。
-	const [initialScroll] = useState(() => {
-		const saved = getPostScrollPosition(id);
-		const scrollOffset = saved?.scrollOffset;
-		const savedScrollOffset =
-			typeof scrollOffset === "number" &&
-			Number.isFinite(scrollOffset) &&
-			scrollOffset > 1
-				? scrollOffset
-				: undefined;
-		const savedHeaderSize = saved?.headerSize;
-		const estimatedHeaderSize =
-			typeof savedHeaderSize === "number" &&
-			Number.isFinite(savedHeaderSize) &&
-			savedHeaderSize > 0
-				? savedHeaderSize
-				: undefined;
-		const savedAnchor = saved?.anchor;
-
-		if (
-			savedAnchor &&
-			typeof savedAnchor.commentId === "number" &&
-			typeof savedAnchor.floor === "number" &&
-			typeof savedAnchor.page === "number" &&
-			typeof savedAnchor.index === "number" &&
-			typeof savedAnchor.viewOffset === "number" &&
-			Number.isFinite(savedAnchor.commentId) &&
-			Number.isFinite(savedAnchor.floor) &&
-			Number.isFinite(savedAnchor.page) &&
-			Number.isInteger(savedAnchor.index) &&
-			savedAnchor.index >= 0 &&
-			Number.isFinite(savedAnchor.viewOffset)
-		) {
-			let index = comments.findIndex(
-				(comment) => comment.id === savedAnchor.commentId,
-			);
-			if (index < 0) {
-				index = comments.findIndex(
-					(comment) => comment.floor >= savedAnchor.floor,
-				);
-			}
-
-			if (index >= 0) {
-				return {
-					initialScrollIndex: {
-						index,
-						viewOffset: savedAnchor.viewOffset,
-						viewPosition: 0,
-					},
-					initialScrollOffset: undefined,
-					estimatedHeaderSize,
-				};
-			}
-		}
-
-		return {
-			initialScrollOffset: savedScrollOffset,
-			estimatedHeaderSize,
-		};
-	});
+	// Android 的 Header 高度变化不保持位置；正文作为列表项参与图片加载后的尺寸补偿。
+	const listData = useMemo(() => [postData, ...comments], [postData, comments]);
 
 	const renderItem = useCallback(
-		({ item }: { item: CommentType; index: number }) => {
+		({ item }: { item: PostPageData | PostComment; index: number }) => {
+			if ("comments" in item) {
+				return (
+					<Original
+						postId={id}
+						data={item}
+						onAvatarPress={() => handleAvatarPress(item.author.uid)}
+					/>
+				);
+			}
 			const item$ = commentsById$[item.id];
 			return (
 				<Comment
@@ -221,7 +247,7 @@ export const PostView = ({
 				/>
 			);
 		},
-		[commentsById$, handleAvatarPress, postData.author.uid],
+		[commentsById$, handleAvatarPress, postData.author.uid, id],
 	);
 
 	const memoList = useCallback(
@@ -237,67 +263,19 @@ export const PostView = ({
 
 	const refreshLastCommentsPage = useCallback(async () => {
 		const queryKey = postInfiniteCommentsQueryKey(id, userId);
-		const cachedData =
-			queryClient.getQueryData<
-				InfiniteData<PostInfiniteCommentsPage, { currentPage: number }>
-			>(queryKey);
-
-		const lastPageParam = cachedData?.pageParams.at(-1);
-
-		if (!lastPageParam) {
-			await queryClient.invalidateQueries({
-				queryKey,
-				exact: true,
-			});
-			return;
-		}
-
-		const refreshedTailPages: PostInfiniteCommentsPage[] = [];
-		const refreshedTailPageParams: Array<{ currentPage: number }> = [];
-
-		let currentPage = lastPageParam.currentPage;
-		let totalPages = currentPage;
-
-		do {
-			const pageNumber = currentPage;
-			const page = await queryClient.query({
-				queryKey: [...queryKey, "refresh", pageNumber],
-				queryFn: ({ signal }) =>
-					fetchPostCommentsPage({
-						postId: id,
-						currentPage: pageNumber,
-						signal,
-					}),
-				gcTime: 0,
-			});
-
-			refreshedTailPages.push(page);
-			refreshedTailPageParams.push({ currentPage });
-			totalPages = Math.max(totalPages, page.pagination.totalPages);
-			currentPage += 1;
-		} while (currentPage <= totalPages);
-
-		queryClient.setQueryData<
-			InfiniteData<PostInfiniteCommentsPage, { currentPage: number }>
-		>(queryKey, (prev) => {
-			if (!prev?.pages.length) {
-				return prev;
-			}
-
-			return {
-				pages: [...prev.pages.slice(0, -1), ...refreshedTailPages],
-				pageParams: [
-					...prev.pageParams.slice(0, -1),
-					...refreshedTailPageParams,
-				],
-			};
-		});
+		await refreshPostCommentsTail(
+			queryClient,
+			queryKey,
+			(currentPage, signal) =>
+				fetchPostCommentsPage({ postId: id, currentPage, signal }),
+		);
 	}, [id, userId, queryClient]);
 
 	useEffect(() => {
 		let stateRead = false;
 		const saveScrollPosition = () => {
-			if (stateRead) {
+			// 恢复途中离开时保留旧位置，不记录初始化的顶部或中间位置。
+			if (stateRead || !listReadyRef.current) {
 				return;
 			}
 
@@ -314,10 +292,10 @@ export const PostView = ({
 
 				stateRead = true;
 				const scroll = state.scroll;
-				const headerSize = headerSizeRef.current;
+				const headerSize = state.sizeAtIndex(0);
 				let anchor: PostScrollPosition["anchor"];
 
-				// 记录越过 header 后的评论锚点，偏移无效时仍保留像素位置。
+				// 第 0 项是正文；评论位置已包含正文高度，不再重复累加。
 				if (
 					typeof scroll === "number" &&
 					Number.isFinite(scroll) &&
@@ -326,13 +304,13 @@ export const PostView = ({
 					headerSize > 0 &&
 					scroll > headerSize &&
 					Number.isInteger(state.start) &&
-					state.start >= 0 &&
-					state.start < commentsRef.current.length
+					state.start > 0 &&
+					state.start <= commentsRef.current.length
 				) {
 					try {
-						const comment = commentsRef.current[state.start];
+						const comment = commentsRef.current[state.start - 1];
 						const position = state.positionAtIndex(state.start);
-						const viewOffset = headerSize + position - scroll;
+						const viewOffset = position - scroll;
 
 						if (
 							typeof comment.id === "number" &&
@@ -345,7 +323,7 @@ export const PostView = ({
 								commentId: comment.id,
 								floor: comment.floor,
 								page: comment.currentPage,
-								index: state.start,
+								index: state.start - 1,
 								viewOffset,
 							};
 						}
@@ -417,7 +395,12 @@ export const PostView = ({
 				style={{
 					flex: 1,
 					justifyContent: "flex-end",
+					opacity: isListVisible ? 1 : 0,
 				}}
+				pointerEvents={isListVisible ? "auto" : "none"}
+				importantForAccessibility={
+					isListVisible ? "auto" : "no-hide-descendants"
+				}
 			>
 				<LegendList
 					ref={legendListRef}
@@ -426,36 +409,46 @@ export const PostView = ({
 					}}
 					initialScrollIndex={initialScroll.initialScrollIndex}
 					initialScrollOffset={initialScroll.initialScrollOffset}
-					estimatedHeaderSize={initialScroll.estimatedHeaderSize}
-					onMetricsChange={(metrics) => {
-						headerSizeRef.current =
-							typeof metrics.headerSize === "number" &&
-							Number.isFinite(metrics.headerSize) &&
-							metrics.headerSize > 0
-								? metrics.headerSize
-								: undefined;
+					alwaysRender={{ top: 1 }}
+					getItemType={(item) => ("comments" in item ? "original" : "comment")}
+					onReady={async () => {
+						const list = legendListRef.current;
+						if (!list || listReadyRef.current) return;
+
+						try {
+							// onReady 后仍可能有尺寸补偿，等待原生定位完成再显示。
+							if (initialScroll.initialScrollIndex) {
+								await list.scrollToIndex({
+									...initialScroll.initialScrollIndex,
+									animated: false,
+								});
+							} else if (initialScroll.initialScrollOffset) {
+								await list.scrollToOffset({
+									offset: initialScroll.initialScrollOffset,
+									animated: false,
+								});
+							}
+						} catch (error) {
+							Sentry.captureException(error);
+						}
+
+						if (legendListRef.current !== list) return;
+						listReadyRef.current = true;
+						setIsListVisible(true);
 					}}
-					data={comments}
+					data={listData}
 					renderItem={renderItem}
-					keyExtractor={(x) => x.id.toString()}
-					recycleItems
-					ListHeaderComponent={
-						<Original
-							postId={id}
-							data={postData}
-							onAvatarPress={() => {
-								setCurrentAvatarUid(postData.author.uid);
-								avatarMenuRef.current?.present();
-							}}
-						/>
+					keyExtractor={(item) =>
+						"comments" in item ? "original" : item.id.toString()
 					}
+					recycleItems
 					showsHorizontalScrollIndicator={false}
 					showsVerticalScrollIndicator={false}
 					refreshControl={
 						<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
 					}
 					onEndReached={() => {
-						if (hasNextPage && !isFetchingNextPage) {
+						if (hasNextPage && !isFetching && !isRefreshing && !isError) {
 							fetchNextPage();
 						}
 					}}
@@ -464,11 +457,18 @@ export const PostView = ({
 							isFetchingNextPage={isFetchingNextPage}
 							hasNextPage={hasNextPage}
 							isFetching={isFetching}
+							isError={isError}
+							onRetry={() => {
+								if (isFetchNextPageError) fetchNextPage();
+								else refetch();
+							}}
 						/>
 					}
-					ItemSeparatorComponent={() => (
-						<View className="ml-17 h-px bg-border opacity-50" />
-					)}
+					ItemSeparatorComponent={({ leadingItem }) =>
+						"comments" in leadingItem ? null : (
+							<View className="ml-17 h-px bg-border opacity-50" />
+						)
+					}
 					renderScrollComponent={memoList}
 				/>
 				{userId ? (
@@ -487,15 +487,24 @@ export const PostView = ({
 								postId={id}
 								ref={inputBarRef}
 								onPost={() => {
-									refreshLastCommentsPage().catch((error: unknown) =>
-										Sentry.captureException(error),
-									);
+									refreshLastCommentsPage().catch((error: unknown) => {
+										Sentry.captureException(error);
+										ToastAndroid.show(
+											t("errorFallback.message"),
+											ToastAndroid.LONG,
+										);
+									});
 								}}
 							/>
 						</View>
 					</KeyboardStickyView>
 				) : null}
 			</KeyboardGestureArea>
+			{!isListVisible && (
+				<View className="absolute inset-0 justify-center items-center">
+					<Spinner />
+				</View>
+			)}
 			<AvatarMenu ref={avatarMenuRef} uid={currentAvatarUid} />
 			<TrueSheetMenu
 				ref={trueSheetRef}

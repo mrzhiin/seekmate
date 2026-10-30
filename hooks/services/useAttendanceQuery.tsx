@@ -20,8 +20,8 @@ export const getAttendanceQueryOptions = (userId: number) => {
 	return {
 		queryKey: ["api/attendance/board?page=1", userId] as const,
 		queryFn: async ({ signal }: { signal: AbortSignal }) => {
-			const res = await nsClient.get("api/attendance/board?page=1", { signal });
-			const resData = res.data;
+			const res = await nsClient("api/attendance/board?page=1", { signal });
+			const resData: unknown = await res.json();
 			const result = v.safeParse(SuccessResSchema, resData);
 
 			if (result.success) {

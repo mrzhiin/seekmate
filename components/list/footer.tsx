@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-screens/experimental";
+import { ErrorFallback } from "@/components/errorFallback";
 import { Spinner } from "../spinner";
 import { MaterialDesignIcons } from "../ui/materialDesignIcons";
 import { Text } from "../ui/text";
@@ -9,12 +10,27 @@ export const ListFooter = ({
 	isFetchingNextPage,
 	hasNextPage,
 	isFetching,
+	isError,
+	onRetry,
 }: {
 	isFetchingNextPage: boolean;
 	hasNextPage: boolean;
 	isFetching: boolean;
+	isError: boolean;
+	onRetry: () => void;
 }) => {
 	const { t } = useTranslation();
+
+	if (isError && !isFetching) {
+		return (
+			<SafeAreaView edges={{ bottom: true }}>
+				<View className="py-5">
+					<ErrorFallback onReset={onRetry} />
+				</View>
+			</SafeAreaView>
+		);
+	}
+	
 	if (isFetchingNextPage) {
 		return (
 			<SafeAreaView edges={{ bottom: true }}>

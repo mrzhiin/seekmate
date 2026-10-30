@@ -15,6 +15,7 @@ import {
 	signOutUserSession,
 	waitForSessionCleanup,
 } from "@/lib/auth/session";
+import { isTrustedAuthUrl } from "@/lib/auth/validation";
 import { config } from "@/lib/config";
 import { ScreenName } from "@/stack/screenName";
 import type { ScreenParams } from "@/stack/screenParams";
@@ -33,6 +34,10 @@ const MessageSuccessStringSchema = v.pipe(
 );
 
 const SIGNIN_URL = new URL("/signIn.html", config.apiBaseUrl).toString();
+const AUTH_ORIGINS = [
+	new URL(SIGNIN_URL).origin,
+	new URL(config.siteUrl).origin,
+];
 
 const runJS = `
 const UsernameEl = document.querySelector(".Username");
@@ -73,7 +78,12 @@ const Screen = () => {
 
 	const handleNavigationStateChange = useCallback(
 		(navState: WebViewNavigation) => {
-			if (navState.loading || navState.url === SIGNIN_URL) return;
+			if (
+				navState.loading ||
+				navState.url === SIGNIN_URL ||
+				!isTrustedAuthUrl(navState.url, AUTH_ORIGINS)
+			)
+				return;
 
 			const url = new URL(navState.url);
 
@@ -157,6 +167,8 @@ const Screen = () => {
 	};
 
 	const handleMessage = (event: WebViewMessageEvent) => {
+		if (!isTrustedAuthUrl(event.nativeEvent.url, AUTH_ORIGINS)) return;
+
 		const result = v.safeParse(
 			MessageSuccessStringSchema,
 			event.nativeEvent.data,
@@ -185,6 +197,11 @@ const Screen = () => {
 						source={{
 							uri: SIGNIN_URL,
 						}}
+						originWhitelist={AUTH_ORIGINS}
+						onShouldStartLoadWithRequest={(request) =>
+							request.isTopFrame === false ||
+							isTrustedAuthUrl(request.url, AUTH_ORIGINS)
+						}
 						onNavigationStateChange={handleNavigationStateChange}
 						onMessage={handleMessage}
 						webviewDebuggingEnabled={false}

@@ -19,7 +19,7 @@ export const signInUserSession = async (
 	if (signal?.aborted) return;
 	if (!Number.isSafeInteger(userId) || userId <= 0)
 		throw new Error("Invalid user id");
-	if (userStore.getState().id !== userId) queryClient.clear();
+	queryClient.clear();
 	userDataStore.getState().reset();
 	userStore.getState().update({ id: userId, name: undefined });
 };
@@ -32,14 +32,19 @@ export const signOutUserSession = (): Promise<void> => {
 	userStore.getState().reset();
 	userDataStore.getState().reset();
 	queryClient.clear();
-	signOutPromise = Promise.all([
+	// A failed task must not release the barrier while another is still clearing data.
+	signOutPromise = Promise.allSettled([
 		NitroCookies.clearAll().then(async (cleared) => {
 			if (!cleared) throw new Error("Cookie cleanup failed");
 			await NitroCookies.flush();
 		}),
 		asyncStoragePersister.removeClient(),
 	])
-		.then(() => {})
+		.then((results) => {
+			for (const result of results) {
+				if (result.status === "rejected") throw result.reason;
+			}
+		})
 		.catch((error: unknown) => {
 			cleanupError =
 				error instanceof Error ? error : new Error("Session cleanup failed");

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: Release tag to create or update
+        description: Existing tag to build, or new tag for the selected commit
         required: true
         type: string
       release_name:
@@ -28,7 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_semver_prerelease: ${{ steps.resolve.outputs.is_semver_prerelease }}
+      commit_sha: ${{ steps.resolve.outputs.commit_sha }}
     steps:
+      - name: Checkout repository and tags
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Resolve release tag metadata
         id: resolve
         env:
@@ -36,13 +42,27 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
+            const { execFileSync } = require('node:child_process')
             const releaseTag = process.env.RELEASE_TAG
-            const isSemverPrerelease = !/^.*v\d+\.\d+\.\d+$/.test(releaseTag)
+            execFileSync('git', ['check-ref-format', `refs/tags/${releaseTag}`])
 
-            core.setOutput('is_semver_prerelease', String(isSemverPrerelease))
+            let commitSha
+            try {
+              commitSha = execFileSync(
+                'git', ['rev-parse', '--verify', `refs/tags/${releaseTag}^{commit}`],
+                { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+              ).trim()
+            } catch (error) {
+              if (context.eventName !== 'workflow_dispatch') throw error
+              commitSha = context.sha
+            }
+
+            core.setOutput('commit_sha', commitSha)
+            core.setOutput('is_semver_prerelease', String(!/^v\d+\.\d+\.\d+$/.test(releaseTag)))
 
   build-apk:
     name: Build APK
+    needs: resolve-release
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -64,6 +84,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-release.outputs.commit_sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -144,6 +166,7 @@ jobs:
 
   build-aab:
     name: Build AAB
+    needs: resolve-release
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -165,6 +188,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-release.outputs.commit_sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -265,6 +290,7 @@ jobs:
         if: github.ref_type == 'tag' || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ inputs.tag_name || github.ref_name }}
+          target_commitish: ${{ needs.resolve-release.outputs.commit_sha }}
           name: ${{ inputs.release_name || inputs.tag_name || github.ref_name }}
           prerelease: ${{ env.IS_SEMVER_PRERELEASE == 'true' }}
           files: |

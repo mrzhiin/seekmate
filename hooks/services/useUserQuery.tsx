@@ -39,8 +39,8 @@ export const useUserSuspenseQuery = (uid: number) => {
 	const result = useSuspenseQuery({
 		queryKey: ["api/account/getInfo/", uid],
 		queryFn: async ({ signal }) => {
-			const res = await nsClient.get(`api/account/getInfo/${uid}`, { signal });
-			const resData = res.data;
+			const res = await nsClient(`api/account/getInfo/${uid}`, { signal });
+			const resData: unknown = await res.json();
 			const result = v.safeParse(UserSuccessResSchema, resData);
 
 			if (!result.success) {
@@ -80,10 +80,10 @@ export const useRashUserQuery = (uid: number, enabled = true) => {
 		queryFn: ({ signal }) => {
 			return queue.add(
 				async () => {
-					const res = await nsClient.get(`api/account/getInfo/${uid}`, {
+					const res = await nsClient(`api/account/getInfo/${uid}`, {
 						signal,
 					});
-					const resData = res.data;
+					const resData: unknown = await res.json();
 					const result = v.safeParse(UserSuccessResSchema, resData);
 
 					if (!result.success) {

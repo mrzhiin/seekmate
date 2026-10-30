@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useQueryClient } from "@tanstack/react-query";
 import { fetch } from "expo/fetch";
 import { File } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
@@ -94,7 +95,7 @@ type Props = NativeStackScreenProps<ScreenParams, typeof ScreenName.PostNew>;
 const Screen = ({ navigation }: Props) => {
 	const { t } = useTranslation();
 	const editorRef = useRef<EditorRef>(null);
-	const publishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const queryClient = useQueryClient();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toolbarHeight, setToolbarHeight] = useState(0);
 	const keyboardHeight = useKeyboardState((state) => state.height);
@@ -127,6 +128,8 @@ const Screen = ({ navigation }: Props) => {
 				.then((message) => {
 					if (message.success) {
 						ToastAndroid.show(t("post.new.success"), ToastAndroid.SHORT);
+						queryClient.invalidateQueries({ queryKey: ["posts"] });
+						queryClient.invalidateQueries({ queryKey: ["search"] });
 						navigation.goBack();
 					} else {
 						ToastAndroid.show(t("post.new.failed"), ToastAndroid.SHORT);
@@ -338,14 +341,6 @@ const Screen = ({ navigation }: Props) => {
 			),
 		});
 	}, [navigation, handlePublish, isSubmitting, control, categories, t]);
-
-	useEffect(() => {
-		return () => {
-			if (publishTimeoutRef.current) {
-				clearTimeout(publishTimeoutRef.current);
-			}
-		};
-	}, []);
 
 	return (
 		<>

@@ -1,68 +1,72 @@
-import axios, { AxiosError, CanceledError } from "axios";
+import { type FetchRequestInit, fetch } from "expo/fetch";
 import Constants from "expo-constants";
 import * as v from "valibot";
 import { signOutUserSession, waitForSessionCleanup } from "@/lib/auth/session";
+import { ErrorUser401Schema } from "@/lib/auth/validation";
+import { config } from "@/lib/config";
 import { Sentry } from "@/lib/sentry";
 import { userStore } from "@/store/userStore";
-import { config } from "../config";
 
-const requestUsers = new WeakMap<object, number | undefined>();
+export const nsClient = async (
+	path: string,
+	{
+		baseURL = config.apiBaseUrl,
+		...options
+	}: FetchRequestInit & {
+		baseURL?: string;
+	} = {},
+) => {
+	const userId = userStore.getState().id;
 
-export const nsClient = axios.create({
-	baseURL: config.apiBaseUrl,
-});
+	await waitForSessionCleanup();
 
-nsClient.interceptors.request.use(
-	async (config) => {
-		const userId = userStore.getState().id;
-		await waitForSessionCleanup();
-		if (userStore.getState().id !== userId)
-			throw new CanceledError("User session changed");
-		requestUsers.set(config, userId);
-		const headers = config.headers;
-		const ua = await Constants.getWebViewUserAgentAsync();
+	if (userStore.getState().id !== userId) {
+		throw new DOMException("User session changed", "AbortError");
+	}
 
-		if (!headers.has("User-Agent")) {
-			headers.set("User-Agent", ua);
+	const headers = new Headers(options.headers);
+
+	if (!headers.has("User-Agent")) {
+		const userAgent = await Constants.getWebViewUserAgentAsync();
+		if (userAgent) headers.set("User-Agent", userAgent);
+	}
+
+	if (userStore.getState().id !== userId) {
+		throw new DOMException("User session changed", "AbortError");
+	}
+
+	// Keep the timeout active while callers read the response body, not just its headers.
+	const timeout = AbortSignal.timeout(30_000);
+	const signal = options.signal
+		? AbortSignal.any([options.signal, timeout])
+		: timeout;
+
+	signal.throwIfAborted();
+
+	const response = await fetch(
+		new URL(path, `${baseURL.replace(/\/+$/, "")}/`),
+		{ ...options, headers, signal, credentials: "include" },
+	);
+
+	if (!response.ok) {
+		const data: unknown = await response.json().catch(() => undefined);
+		signal.throwIfAborted();
+		if (
+			userStore.getState().id === userId &&
+			v.safeParse(ErrorUser401Schema, data).success
+		) {
+			void signOutUserSession().catch((error: unknown) =>
+				Sentry.captureException(error),
+			);
 		}
+		throw new Error(`HTTP ${response.status} ${response.statusText}`);
+	}
 
-		if (userStore.getState().id !== userId)
-			throw new CanceledError("User session changed");
-		return config;
-	},
-	(error) => {
-		return Promise.reject(error);
-	},
-);
+	signal.throwIfAborted();
 
-const ErrorUser404Schema = v.object({
-	// message: v.literal("USER NOT FOUND"),
-	status: v.literal(404),
-	success: v.literal(false),
-});
+	if (userStore.getState().id !== userId) {
+		throw new DOMException("User session changed", "AbortError");
+	}
 
-const ErrorUser401Schema = v.object({
-	status: v.literal(401),
-	success: v.literal(false),
-});
-
-nsClient.interceptors.response.use(
-	(response) => response,
-	(error) => {
-		if (error instanceof AxiosError) {
-			const data = error.response?.data;
-			if (
-				error.config &&
-				requestUsers.get(error.config) === userStore.getState().id &&
-				(v.safeParse(ErrorUser404Schema, data).success ||
-					v.safeParse(ErrorUser401Schema, data).success)
-			) {
-				void signOutUserSession().catch((error: unknown) =>
-					Sentry.captureException(error),
-				);
-			}
-		}
-
-		return Promise.reject(error);
-	},
-);
+	return response;
+};

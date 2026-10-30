@@ -16,7 +16,8 @@ export const ErrorFallback = ({ onReset }: { onReset?: () => void }) => {
 			{onReset && (
 				<Pressable
 					onPress={onReset}
-					className="rounded-full px-4 py-1 border-border border bg-muted"
+					accessibilityRole="button"
+					className="rounded-full px-4 py-1 min-h-12 justify-center border-border border bg-muted"
 				>
 					<Text className="text-muted-foreground text-base">
 						{t("errorFallback.retry")}

@@ -3,12 +3,11 @@ import { useStore } from "zustand";
 import { config } from "@/lib/config";
 import { nsClient } from "@/lib/http/client";
 import { parsePostPageHtml } from "@/lib/parser";
+import {
+	type PostInfiniteCommentsPage,
+	postInfiniteCommentsQueryKey,
+} from "@/lib/query/postComments";
 import { userStore } from "@/store/userStore";
-
-export const postInfiniteCommentsQueryKey = (
-	postId: number,
-	userId: number | undefined,
-) => ["post", postId, "comments", "infinite", userId] as const;
 
 export const fetchPostCommentsPage = async ({
 	postId,
@@ -19,12 +18,12 @@ export const fetchPostCommentsPage = async ({
 	currentPage: number;
 	signal?: AbortSignal;
 }) => {
-	const res = await nsClient.get(`post-${postId}-${currentPage}`, {
+	const res = await nsClient(`post-${postId}-${currentPage}`, {
 		baseURL: config.siteUrl,
 		signal,
 	});
 
-	const htmlString = res.data;
+	const htmlString = await res.text();
 	const postPageJSONData = parsePostPageHtml(htmlString);
 
 	return {
@@ -34,14 +33,12 @@ export const fetchPostCommentsPage = async ({
 	};
 };
 
-export type PostInfiniteCommentsPage = Awaited<
-	ReturnType<typeof fetchPostCommentsPage>
->;
-
 export const usePostInfiniteCommentsQuery = ({
 	postId,
+	initialPage,
 }: {
 	postId: number;
+	initialPage: PostInfiniteCommentsPage;
 }) => {
 	const userId = useStore(userStore, (s) => s.id);
 	const result = useInfiniteQuery({
@@ -55,6 +52,11 @@ export const usePostInfiniteCommentsQuery = ({
 			});
 		},
 		initialPageParam: { currentPage: 1 },
+		initialData: {
+			pages: [initialPage],
+			pageParams: [{ currentPage: 1 }],
+		},
+		refetchOnMount: (query) => query.state.data?.pages[0] !== initialPage,
 		getNextPageParam: (lastPage, _, lastPageParam) => {
 			if (lastPage.pagination.hasNext) {
 				return { currentPage: lastPageParam.currentPage + 1 };

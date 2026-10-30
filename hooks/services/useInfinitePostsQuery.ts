@@ -18,19 +18,16 @@ export const useInfinitePostsQuery = ({
 	const result = useInfiniteQuery({
 		queryKey,
 		queryFn: async ({ pageParam, signal }) => {
-			const res = await nsClient.get(
-				`${category ? `categories/${category}/` : ""}page-${pageParam.currentPage}`,
-				{
-					baseURL: config.siteUrl,
-					signal,
-					params: {
-						sortBy:
-							pageParam.sortBy && !category ? pageParam.sortBy : undefined,
-					},
-				},
+			const params = new URLSearchParams();
+			if (pageParam.sortBy && !category) {
+				params.set("sortBy", pageParam.sortBy);
+			}
+			const res = await nsClient(
+				`${category ? `categories/${category}/` : ""}page-${pageParam.currentPage}?${params}`,
+				{ baseURL: config.siteUrl, signal },
 			);
 
-			const htmlString = res.data;
+			const htmlString = await res.text();
 			const pageJSONData = parsePageHtml(htmlString);
 			return pageJSONData;
 		},
@@ -61,16 +58,16 @@ export const useSearchInfinitePostsQuery = ({
 		retry: false,
 		queryKey,
 		queryFn: async ({ pageParam, signal }) => {
-			const res = await nsClient.get("search", {
+			const params = new URLSearchParams({
+				page: pageParam.currentPage.toString(),
+				q: keyword || "",
+			});
+			const res = await nsClient(`search?${params}`, {
 				baseURL: config.siteUrl,
 				signal,
-				params: {
-					page: pageParam.currentPage.toString(),
-					q: keyword || "",
-				},
 			});
 
-			const htmlString = res.data;
+			const htmlString = await res.text();
 			const pageJSONData = parsePageHtml(htmlString);
 			return pageJSONData;
 		},

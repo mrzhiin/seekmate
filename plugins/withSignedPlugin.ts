@@ -30,18 +30,27 @@ function assertOptions(
 	}
 }
 
-function upsertGradleProperty(
+export function upsertGradleProperty(
 	lines: string[],
 	key: string,
 	value: string,
 ): string[] {
+	const escapedValue = value
+		.replace(/\\/g, "\\\\")
+		.replace(
+			/[^\x20-\x7e]/g,
+			(char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
+		)
+		.replace(/^ /, "\\ ");
 	const eq = `${key}=`;
 	const idx = lines.findIndex((l) => l.startsWith(eq));
+
 	if (idx !== -1) {
-		lines[idx] = `${eq}${value}`;
+		lines[idx] = `${eq}${escapedValue}`;
 	} else {
-		lines.push(`${eq}${value}`);
+		lines.push(`${eq}${escapedValue}`);
 	}
+
 	return lines;
 }
 

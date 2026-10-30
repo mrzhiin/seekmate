@@ -8,7 +8,7 @@ SeekMate is an **unofficial NodeSeek client for Android**, built with Expo and R
 
 ![SeekMate home feed, categories, signed-out profile, and settings in light and dark modes](./docs/images/overview.webp)
 
-*Screenshots from version 0.0.18; the current interface may differ.*
+_Screenshots from version 0.0.18; the current interface may differ._
 
 ## Features
 

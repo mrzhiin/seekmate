@@ -17,8 +17,8 @@ export const useAdvertiseQuery = () => {
 	const result = useQuery({
 		queryKey: ["api/promotion/list"],
 		queryFn: async ({ signal }) => {
-			const res = await nsClient.get("api/promotion/list", { signal });
-			const resData = res.data;
+			const res = await nsClient("api/promotion/list", { signal });
+			const resData: unknown = await res.json();
 			const result = v.safeParse(SuccessResSchema, resData);
 
 			if (result.success) {

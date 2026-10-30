@@ -22,7 +22,7 @@ const Screen = (props: Props) => {
 	const {
 		data: postData,
 		isLoading,
-		isError,
+		isLoadingError,
 		refetch,
 	} = usePostOriginalQuery({
 		postId: id,
@@ -54,12 +54,12 @@ const Screen = (props: Props) => {
 		);
 	}
 
-	if (isError) {
+	if (isLoadingError) {
 		return <ErrorFallback onReset={refetch} />;
 	}
 
 	if (postData) {
-		return <PostView postData={postData} id={id} />;
+		return <PostView key={id} postData={postData} id={id} />;
 	}
 };
 

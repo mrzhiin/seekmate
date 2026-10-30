@@ -36,10 +36,11 @@ const normalizeMarkdownLineEndings = (markdown: string) => {
 const flushParagraph = (lines: string[], output: MarkdownSegment[]) => {
 	if (lines.length === 0) return;
 
-	const content = lines.join("\n").trim();
+	// Only trim empty lines: indentation and trailing spaces carry Markdown meaning.
+	const content = lines.join("\n").replace(/^\n+|\n+$/g, "");
 	lines.length = 0;
 
-	if (!content) return;
+	if (!content.trim()) return;
 
 	output.push({
 		type: "markdown",
@@ -74,7 +75,7 @@ const parseTabsBlock = ({ lines, startIndex }: MarkdownParserContext) => {
 
 		tabs.push({
 			title: currentTabTitle,
-			content: currentTabContent.join("\n").trim(),
+			content: currentTabContent.join("\n").replace(/^\n+|\n+$/g, ""),
 		});
 		currentTabTitle = "";
 		currentTabContent = [];

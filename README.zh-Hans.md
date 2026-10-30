@@ -8,7 +8,7 @@ SeekMate 是一款基于 Expo 和 React Native 构建的 **Android 端 NodeSeek 
 
 ![SeekMate 浅色和深色模式下的首页、版块、未登录个人页面和设置界面](./docs/images/overview.webp)
 
-*截图来自 0.0.18 版本，当前界面可能有所不同。*
+_截图来自 0.0.18 版本，当前界面可能有所不同。_
 
 ## 功能特性
 
